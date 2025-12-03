@@ -5,8 +5,9 @@
 // Purpose: Root Application Component and Layout
 // ============================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './app.css';
+import { logger, COMMENTARY } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
 
 // ============================================
 // TYPES
@@ -31,20 +32,112 @@ const App: React.FC = () => {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [systemStatus] = useState<'healthy' | 'loading' | 'error'>('healthy');
 
-  const handleAddPlatform = () => {
-    const newPlatform: Platform = {
-      id: 'plat-' + Date.now().toString(),
-      name: 'New Platform',
-      edition: 'free',
-      status: 'active',
-      isExpanded: true,
+  // ============================================
+  // INITIALIZATION
+  // ============================================
+
+  useEffect(() => {
+    logger.success('App.Init', 'Protocol OS application mounted', {
+      commentary: COMMENTARY.SYSTEM_INIT,
+      data: { viewMode, platformCount: platforms.length },
+    });
+
+    // Cleanup on unmount
+    return () => {
+      logger.info('App.Unmount', 'Application unmounting', {
+        commentary: COMMENTARY.SYSTEM_SHUTDOWN,
+      });
     };
-    setPlatforms(prev => [...prev, newPlatform]);
+  }, []);
+
+  // ============================================
+  // HANDLERS
+  // ============================================
+
+  const handleAddPlatform = () => {
+    logger.group('Platform.Add');
+    
+    const result = logger.catch('Platform.Create', () => {
+      const newPlatform: Platform = {
+        id: 'plat-' + Date.now().toString(),
+        name: 'New Platform',
+        edition: 'free',
+        status: 'active',
+        isExpanded: true,
+      };
+      
+      logger.debug('Platform.Generate', 'Platform object created', {
+        commentary: 'Generating unique ID using timestamp for platform identification',
+        data: newPlatform,
+      });
+      
+      return newPlatform;
+    }, {
+      commentary: 'Attempting to create new platform object',
+    });
+
+    if (result) {
+      setPlatforms(prev => {
+        const updated = [...prev, result];
+        logger.success('Platform.Add', `Platform "${result.name}" added successfully`, {
+          commentary: COMMENTARY.PLATFORM_CREATED,
+          data: { 
+            platformId: result.id, 
+            totalPlatforms: updated.length 
+          },
+        });
+        return updated;
+      });
+    }
+    
+    logger.groupEnd();
   };
 
   const handleDeletePlatform = (id: string) => {
-    setPlatforms(prev => prev.filter(p => p.id !== id));
+    logger.group('Platform.Delete');
+    
+    const platformToDelete = platforms.find(p => p.id === id);
+    
+    if (!platformToDelete) {
+      logger.warn('Platform.Delete', `Platform not found: ${id}`, {
+        commentary: 'Attempted to delete a platform that does not exist in state',
+        data: { searchedId: id, availableIds: platforms.map(p => p.id) },
+      });
+      logger.groupEnd();
+      return;
+    }
+
+    logger.info('Platform.Delete', `Deleting platform: ${platformToDelete.name}`, {
+      commentary: 'Initiating platform deletion - this will remove the platform from state',
+      data: platformToDelete,
+    });
+
+    setPlatforms(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      logger.success('Platform.Delete', `Platform "${platformToDelete.name}" deleted`, {
+        commentary: COMMENTARY.PLATFORM_DELETED,
+        data: { 
+          deletedId: id, 
+          remainingPlatforms: updated.length 
+        },
+      });
+      return updated;
+    });
+    
+    logger.groupEnd();
   };
+
+  const handleViewModeChange = (newMode: ViewMode) => {
+    logger.info('View.Change', `Switching view mode: ${viewMode} → ${newMode}`, {
+      commentary: 'View modes control the layout: Builder for editing, Library for browsing saved handshakes, Split for both',
+      data: { from: viewMode, to: newMode },
+    });
+    setViewMode(newMode);
+  };
+
+  // ============================================
+  // RENDER
+  // ============================================
 
   return (
     <div className="app">
@@ -62,19 +155,19 @@ const App: React.FC = () => {
           <div className="app__view-toggle">
             <button
               className={'app__view-btn' + (viewMode === 'builder' ? ' app__view-btn--active' : '')}
-              onClick={() => setViewMode('builder')}
+              onClick={() => handleViewModeChange('builder')}
             >
               🔧 Builder
             </button>
             <button
               className={'app__view-btn' + (viewMode === 'library' ? ' app__view-btn--active' : '')}
-              onClick={() => setViewMode('library')}
+              onClick={() => handleViewModeChange('library')}
             >
               📚 Library
             </button>
             <button
               className={'app__view-btn' + (viewMode === 'split' ? ' app__view-btn--active' : '')}
-              onClick={() => setViewMode('split')}
+              onClick={() => handleViewModeChange('split')}
             >
               ⊞ Split
             </button>
@@ -155,7 +248,7 @@ const App: React.FC = () => {
         </div>
         <div className="app__footer-center">
           <span className="app__footer-stats">
-            {platforms.length} platforms · 247 source files · 26 build phases
+            {platforms.length} platforms · 250 source files · 26 build phases
           </span>
         </div>
         <div className="app__footer-right">
