@@ -1,0 +1,297 @@
+/* ============================================
+   PROTOCOL OS - GLOBAL CSS VARIABLES
+   ============================================
+   Address: 1.10.a
+   Purpose: Define all CSS custom properties (design tokens)
+   ============================================ */
+
+:root {
+  /* ============================================
+     PRIMARY COLOR PALETTE - Teal/Dark Theme
+     ============================================ */
+  
+  /* Background Colors */
+  --bg-primary: #011a1a;           /* Base Background: Very dark teal-black */
+  --bg-secondary: #023434;         /* Inputs, Modals: Dark teal */
+  --bg-tertiary: #034e4e;          /* Hover States, Cards */
+  --bg-quaternary: #045858;        /* Elevated surfaces */
+  
+  /* Border Colors */
+  --border-color: #006666;         /* Standard borders */
+  --border-color-light: #008080;   /* Light borders */
+  --border-color-focus: #2dd4bf;   /* Focus state borders */
+  
+  /* Text Colors */
+  --text-primary: #f9fafb;         /* Primary text (gray-50) */
+  --text-secondary: #d1d5db;       /* Secondary text (gray-300) */
+  --text-tertiary: #9ca3af;        /* Muted text (gray-400) */
+  --text-disabled: #6b7280;        /* Disabled text (gray-500) */
+  
+  /* ============================================
+     ACCENT COLORS
+     ============================================ */
+  
+  /* Teal Accents (Primary Brand) */
+  --accent-teal: #2dd4bf;          /* Bright Teal - borders, focus, accents */
+  --accent-teal-primary: #008B8B;  /* Primary Action Button Color */
+  --accent-teal-dark: #0d9488;     /* Darker teal for hover states */
+  --accent-cyan: #22d3ee;          /* Cyan variant */
+  
+  /* Status Colors */
+  --accent-green: #10b981;         /* Success, Add, Healthy state */
+  --accent-green-light: #34d399;   /* Light green */
+  --accent-green-dark: #059669;    /* Dark green */
+  
+  --accent-red: #ef4444;           /* Error, Destructive, Failed state */
+  --accent-red-light: #f87171;     /* Light red */
+  --accent-red-dark: #dc2626;      /* Dark red */
+  
+  --accent-blue: #3b82f6;          /* Active, Processing, Archived state */
+  --accent-blue-light: #60a5fa;    /* Light blue */
+  --accent-blue-dark: #2563eb;     /* Dark blue */
+  
+  --accent-sharp-blue: #00aaff;    /* Unconfigured, Needs attention */
+  
+  --accent-orange: #f59e0b;        /* Warning, Action triggers */
+  --accent-orange-light: #fbbf24;  /* Light orange */
+  --accent-orange-dark: #d97706;   /* Dark orange */
+  
+  --accent-purple: #a78bfa;        /* System messages */
+  --accent-purple-dark: #7c3aed;   /* Dark purple */
+  
+  /* ============================================
+     GLOW EFFECTS
+     ============================================ */
+  
+  --glow-green: 0 0 5px #10b981, 0 0 10px #10b981, 0 0 15px #10b981;
+  --glow-red: 0 0 5px #ef4444, 0 0 10px #ef4444, 0 0 15px #ef4444;
+  --glow-blue: 0 0 5px #3b82f6, 0 0 10px #3b82f6, 0 0 15px #3b82f6;
+  --glow-teal: 0 0 5px #2dd4bf, 0 0 10px #2dd4bf, 0 0 15px #2dd4bf;
+  --glow-orange: 0 0 5px #f59e0b, 0 0 10px #f59e0b, 0 0 15px #f59e0b;
+  
+  /* ============================================
+     HIERARCHICAL BACKGROUNDS - ACTIVE STATE
+     ============================================ */
+  
+  --bg-platform-header: rgba(45, 212, 191, 0.1);
+  --bg-platform: rgba(45, 212, 191, 0.05);
+  --bg-resource-header: rgba(45, 212, 191, 0.15);
+  --bg-resource: rgba(45, 212, 191, 0.1);
+  --bg-handshake-header: rgba(45, 212, 191, 0.2);
+  --bg-handshake: rgba(45, 212, 191, 0.15);
+  
+  /* ============================================
+     HIERARCHICAL BACKGROUNDS - ARCHIVED STATE
+     ============================================ */
+  
+  --bg-platform-header-archived: rgba(59, 130, 246, 0.15);
+  --bg-platform-archived: rgba(59, 130, 246, 0.1);
+  --bg-resource-header-archived: rgba(59, 130, 246, 0.2);
+  --bg-resource-archived: rgba(59, 130, 246, 0.15);
+  --bg-handshake-header-archived: rgba(59, 130, 246, 0.25);
+  --bg-handshake-archived: rgba(59, 130, 246, 0.2);
+  
+  /* ============================================
+     SPECIAL BACKGROUNDS
+     ============================================ */
+  
+  --bg-schema-model: rgba(45, 212, 191, 0.15);
+  --bg-schema-model-editing: rgba(45, 212, 191, 0.25);
+  --bg-promoted-action: rgba(16, 185, 129, 0.15);
+  --bg-action-trigger: rgba(255, 153, 0, 0.1);
+  
+  /* ============================================
+     3D DEPTH EFFECTS
+     ============================================ */
+  
+  --shadow-dark: rgba(0, 0, 0, 0.6);
+  --shadow-darker: rgba(0, 0, 0, 0.8);
+  --shadow-light: rgba(255, 255, 255, 0.05);
+  --highlight-light: rgba(45, 212, 191, 0.1);
+  --highlight-light-stronger: rgba(45, 212, 191, 0.2);
+  
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+  
+  --font-family-base: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+                      Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 
+                      'Helvetica Neue', sans-serif;
+  --font-family-mono: 'Courier New', 'Monaco', 'Consolas', monospace;
+  
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* ============================================
+     SPACING
+     ============================================ */
+  
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;   /* 4px */
+  --spacing-2: 0.5rem;    /* 8px */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-4: 1rem;      /* 16px */
+  --spacing-5: 1.25rem;   /* 20px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+  --spacing-10: 2.5rem;   /* 40px */
+  --spacing-12: 3rem;     /* 48px */
+  
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.375rem;  /* 6px */
+  --radius-lg: 0.5rem;    /* 8px */
+  --radius-xl: 0.75rem;   /* 12px */
+  --radius-2xl: 1rem;     /* 16px */
+  --radius-3xl: 1.25rem;  /* 20px */
+  --radius-full: 9999px;
+  
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+  
+  --transition-fast: 0.15s ease-in-out;
+  --transition-base: 0.2s ease-in-out;
+  --transition-slow: 0.3s ease-in-out;
+  --transition-slower: 0.4s ease-in-out;
+  
+  /* ============================================
+     Z-INDEX LAYERS
+     ============================================ */
+  
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal-backdrop: 300;
+  --z-modal: 400;
+  --z-popover: 500;
+  --z-tooltip: 600;
+  --z-toast: 700;
+  
+  /* ============================================
+     LAYOUT
+     ============================================ */
+  
+  --container-max-width: 80rem;  /* 1280px */
+  --sidebar-width: 16rem;        /* 256px */
+  --header-height: 4rem;         /* 64px */
+}
+
+/* ============================================
+   BASE RESET & DEFAULTS
+   ============================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  background-image: 
+    radial-gradient(circle at top left, var(--bg-tertiary), transparent 40%),
+    radial-gradient(circle at bottom right, var(--bg-secondary), transparent 50%);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  min-height: 100vh;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-base);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-teal);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-secondary);
+}
+
+/* ============================================
+   SELECTION STYLING
+   ============================================ */
+
+::selection {
+  background-color: var(--accent-teal);
+  color: var(--bg-primary);
+}
+
+::-moz-selection {
+  background-color: var(--accent-teal);
+  color: var(--bg-primary);
+}
+
+/* ============================================
+   FOCUS VISIBLE STYLING
+   ============================================ */
+
+:focus-visible {
+  outline: 2px solid var(--accent-teal);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   LINK DEFAULTS
+   ============================================ */
+
+a {
+  color: var(--accent-teal);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+a:hover {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+}

@@ -1,0 +1,429 @@
+/* ============================================
+   PROTOCOL OS - 3D BUTTON STYLES
+   ============================================
+   Address: 1.7.7.b
+   Purpose: 3D raised button with press animation effects
+   ============================================ */
+
+/* ============================================
+   BASE BUTTON STYLES
+   ============================================ */
+
+.button-3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease-out, filter 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.button-3d:focus-visible {
+  outline: 2px solid var(--accent-teal);
+  outline-offset: 3px;
+}
+
+/* ============================================
+   3D STRUCTURE LAYERS
+   ============================================ */
+
+/* Shadow layer (creates depth) */
+.button-3d__shadow {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  border-radius: inherit;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 0;
+  transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+}
+
+/* Content layer (main button face) */
+.button-3d__content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  z-index: 1;
+  transition: transform 0.1s ease-out;
+}
+
+/* Highlight layer (top shine) */
+.button-3d__highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  border-radius: inherit;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.05)
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ============================================
+   SIZE VARIANTS
+   ============================================ */
+
+.button-3d--small {
+  font-size: var(--font-size-xs);
+}
+
+.button-3d--small .button-3d__content {
+  padding: var(--spacing-1) var(--spacing-3);
+}
+
+.button-3d--medium {
+  font-size: var(--font-size-sm);
+}
+
+.button-3d--medium .button-3d__content {
+  padding: var(--spacing-2) var(--spacing-4);
+}
+
+.button-3d--large {
+  font-size: var(--font-size-base);
+}
+
+.button-3d--large .button-3d__content {
+  padding: var(--spacing-3) var(--spacing-6);
+}
+
+/* ============================================
+   VARIANT: PRIMARY (Teal)
+   ============================================ */
+
+.button-3d--primary .button-3d__content {
+  background: linear-gradient(
+    to bottom,
+    var(--accent-teal),
+    var(--accent-teal-dark)
+  );
+  color: var(--bg-primary);
+}
+
+.button-3d--primary .button-3d__shadow {
+  background-color: #065f56;
+}
+
+.button-3d--primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.button-3d--primary.button-3d--glow-hover:hover:not(:disabled) {
+  box-shadow: 0 0 20px var(--accent-teal);
+}
+
+/* ============================================
+   VARIANT: SUCCESS (Green)
+   ============================================ */
+
+.button-3d--success .button-3d__content {
+  background: linear-gradient(
+    to bottom,
+    var(--accent-green),
+    var(--accent-green-dark)
+  );
+  color: white;
+}
+
+.button-3d--success .button-3d__shadow {
+  background-color: #047857;
+}
+
+.button-3d--success:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.button-3d--success.button-3d--glow-hover:hover:not(:disabled) {
+  box-shadow: 0 0 20px var(--accent-green);
+}
+
+/* ============================================
+   VARIANT: DANGER (Red)
+   ============================================ */
+
+.button-3d--danger .button-3d__content {
+  background: linear-gradient(
+    to bottom,
+    var(--accent-red),
+    var(--accent-red-dark)
+  );
+  color: white;
+}
+
+.button-3d--danger .button-3d__shadow {
+  background-color: #991b1b;
+}
+
+.button-3d--danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.button-3d--danger.button-3d--glow-hover:hover:not(:disabled) {
+  box-shadow: 0 0 20px var(--accent-red);
+}
+
+/* ============================================
+   VARIANT: WARNING (Orange)
+   ============================================ */
+
+.button-3d--warning .button-3d__content {
+  background: linear-gradient(
+    to bottom,
+    var(--accent-orange),
+    var(--accent-orange-dark)
+  );
+  color: var(--bg-primary);
+}
+
+.button-3d--warning .button-3d__shadow {
+  background-color: #b45309;
+}
+
+.button-3d--warning:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+/* ============================================
+   VARIANT: INFO (Blue)
+   ============================================ */
+
+.button-3d--info .button-3d__content {
+  background: linear-gradient(
+    to bottom,
+    var(--accent-blue),
+    var(--accent-blue-dark)
+  );
+  color: white;
+}
+
+.button-3d--info .button-3d__shadow {
+  background-color: #1e40af;
+}
+
+.button-3d--info:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+/* ============================================
+   VARIANT: SECONDARY (Gray)
+   ============================================ */
+
+.button-3d--secondary .button-3d__content {
+  background: linear-gradient(
+    to bottom,
+    var(--bg-tertiary),
+    var(--bg-secondary)
+  );
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.button-3d--secondary .button-3d__shadow {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.button-3d--secondary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.button-3d--secondary:hover:not(:disabled) .button-3d__content {
+  border-color: var(--accent-teal);
+}
+
+/* ============================================
+   VARIANT: GHOST (Transparent)
+   ============================================ */
+
+.button-3d--ghost .button-3d__content {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.button-3d--ghost .button-3d__shadow,
+.button-3d--ghost .button-3d__highlight {
+  display: none;
+}
+
+.button-3d--ghost:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+}
+
+/* ============================================
+   RAISED EFFECT
+   ============================================ */
+
+.button-3d--raised {
+  transform: translateY(-2px);
+}
+
+.button-3d--raised:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+
+.button-3d--raised:hover:not(:disabled) .button-3d__shadow {
+  transform: translateY(1px);
+}
+
+/* ============================================
+   PRESSED STATE
+   ============================================ */
+
+.button-3d--pressed,
+.button-3d:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.button-3d--pressed .button-3d__shadow,
+.button-3d:active:not(:disabled) .button-3d__shadow {
+  transform: translateY(-4px);
+  opacity: 0;
+}
+
+.button-3d--pressed .button-3d__content,
+.button-3d:active:not(:disabled) .button-3d__content {
+  transform: translateY(0);
+}
+
+/* ============================================
+   FULL WIDTH
+   ============================================ */
+
+.button-3d--full-width {
+  width: 100%;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.button-3d--loading {
+  cursor: wait;
+}
+
+.button-3d__spinner {
+  animation: button-spinner-rotate 1s linear infinite;
+}
+
+@keyframes button-spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   DISABLED STATE
+   ============================================ */
+
+.button-3d--disabled,
+.button-3d:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-3d--disabled .button-3d__shadow,
+.button-3d:disabled .button-3d__shadow {
+  opacity: 0.3;
+}
+
+/* ============================================
+   ICONS
+   ============================================ */
+
+.button-3d__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-3d__icon--before {
+  margin-right: var(--spacing-1);
+}
+
+.button-3d__icon--after {
+  margin-left: var(--spacing-1);
+}
+
+/* ============================================
+   LABEL
+   ============================================ */
+
+.button-3d__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ============================================
+   BUTTON GROUP
+   ============================================ */
+
+.button-3d-group {
+  display: inline-flex;
+}
+
+.button-3d-group .button-3d {
+  border-radius: 0;
+}
+
+.button-3d-group .button-3d:first-child {
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.button-3d-group .button-3d:last-child {
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+
+.button-3d-group .button-3d + .button-3d {
+  margin-left: 1px;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .button-3d,
+  .button-3d__shadow,
+  .button-3d__content,
+  .button-3d__spinner {
+    transition: none;
+    animation: none;
+  }
+  
+  .button-3d--raised {
+    transform: none;
+  }
+  
+  .button-3d--raised:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .button-3d--pressed,
+  .button-3d:active:not(:disabled) {
+    transform: none;
+  }
+}

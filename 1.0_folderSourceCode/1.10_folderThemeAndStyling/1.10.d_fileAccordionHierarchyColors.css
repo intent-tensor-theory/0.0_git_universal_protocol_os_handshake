@@ -1,0 +1,382 @@
+/* ============================================
+   PROTOCOL OS - ACCORDION HIERARCHY COLORS
+   ============================================
+   Address: 1.10.d
+   Purpose: Color differentiation for Platform/Resource/Handshake levels
+   ============================================ */
+
+/* ============================================
+   ACCORDION BASE STYLES
+   ============================================ */
+
+.accordion {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--spacing-2);
+  transition: all var(--transition-base);
+}
+
+.accordion__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+}
+
+.accordion__header:hover {
+  filter: brightness(1.1);
+}
+
+.accordion__content {
+  overflow: hidden;
+  transition: all var(--transition-slow);
+}
+
+.accordion__content--collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+}
+
+.accordion__content--expanded {
+  max-height: none;
+  opacity: 1;
+  padding: var(--spacing-4);
+}
+
+/* ============================================
+   CHEVRON INDICATOR
+   ============================================ */
+
+.accordion__chevron {
+  width: 20px;
+  height: 20px;
+  transition: transform var(--transition-base);
+  flex-shrink: 0;
+}
+
+.accordion--expanded .accordion__chevron {
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   PLATFORM LEVEL - ACTIVE STATE
+   ============================================ */
+
+.accordion--platform {
+  border: 1px solid rgba(45, 212, 191, 0.2);
+}
+
+.accordion--platform .accordion__header {
+  background: var(--bg-platform-header);
+  border-left: 4px solid var(--accent-teal);
+}
+
+.accordion--platform .accordion__header:hover {
+  background: rgba(45, 212, 191, 0.15);
+}
+
+.accordion--platform .accordion__content {
+  background: var(--bg-platform);
+  border-top: 1px solid rgba(45, 212, 191, 0.1);
+}
+
+.accordion--platform.accordion--expanded {
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 15px rgba(45, 212, 191, 0.1);
+}
+
+/* ============================================
+   PLATFORM LEVEL - MASTER (ARCHIVED) STATE
+   ============================================ */
+
+.accordion--platform-master {
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.accordion--platform-master .accordion__header {
+  background: var(--bg-platform-header-archived);
+  border-left: 4px solid var(--accent-blue);
+}
+
+.accordion--platform-master .accordion__header:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.accordion--platform-master .accordion__content {
+  background: var(--bg-platform-archived);
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.accordion--platform-master.accordion--expanded {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+}
+
+/* ============================================
+   RESOURCE LEVEL - ACTIVE STATE
+   ============================================ */
+
+.accordion--resource {
+  margin-left: var(--spacing-4);
+  border: 1px solid rgba(45, 212, 191, 0.15);
+}
+
+.accordion--resource .accordion__header {
+  background: var(--bg-resource-header);
+  border-left: 3px solid var(--accent-teal-dark);
+}
+
+.accordion--resource .accordion__header:hover {
+  background: rgba(45, 212, 191, 0.2);
+}
+
+.accordion--resource .accordion__content {
+  background: var(--bg-resource);
+  border-top: 1px solid rgba(45, 212, 191, 0.1);
+}
+
+.accordion--resource.accordion--expanded {
+  border-color: var(--accent-teal-dark);
+}
+
+/* ============================================
+   RESOURCE LEVEL - ARCHIVED STATE
+   ============================================ */
+
+.accordion--resource-archived {
+  margin-left: var(--spacing-4);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.accordion--resource-archived .accordion__header {
+  background: var(--bg-resource-header-archived);
+  border-left: 3px solid var(--accent-blue-dark);
+}
+
+.accordion--resource-archived .accordion__header:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.accordion--resource-archived .accordion__content {
+  background: var(--bg-resource-archived);
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+/* ============================================
+   HANDSHAKE LEVEL - ACTIVE STATE
+   ============================================ */
+
+.accordion--handshake {
+  margin-left: var(--spacing-4);
+  border: 1px solid rgba(45, 212, 191, 0.1);
+}
+
+.accordion--handshake .accordion__header {
+  background: var(--bg-handshake-header);
+  border-left: 2px solid var(--accent-green);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.accordion--handshake .accordion__header:hover {
+  background: rgba(45, 212, 191, 0.25);
+}
+
+.accordion--handshake .accordion__content {
+  background: var(--bg-handshake);
+  border-top: 1px solid rgba(45, 212, 191, 0.1);
+}
+
+.accordion--handshake.accordion--expanded {
+  border-color: var(--accent-green);
+}
+
+/* ============================================
+   HANDSHAKE LEVEL - ARCHIVED STATE
+   ============================================ */
+
+.accordion--handshake-archived {
+  margin-left: var(--spacing-4);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.accordion--handshake-archived .accordion__header {
+  background: var(--bg-handshake-header-archived);
+  border-left: 2px solid var(--accent-blue-light);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.accordion--handshake-archived .accordion__header:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.accordion--handshake-archived .accordion__content {
+  background: var(--bg-handshake-archived);
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+/* ============================================
+   HIERARCHY CONNECTOR LINES
+   ============================================ */
+
+.accordion-hierarchy {
+  position: relative;
+}
+
+.accordion-hierarchy::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--accent-teal) 0%,
+    transparent 100%
+  );
+  opacity: 0.3;
+}
+
+/* ============================================
+   DEPTH INDICATORS
+   ============================================ */
+
+.accordion__depth-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+.accordion__depth-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ============================================
+   SERIAL NUMBER DISPLAY
+   ============================================ */
+
+.accordion__serial {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  padding: var(--spacing-1) var(--spacing-2);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.accordion--platform .accordion__serial {
+  color: var(--accent-teal);
+}
+
+.accordion--platform-master .accordion__serial {
+  color: var(--accent-blue);
+}
+
+.accordion--resource .accordion__serial {
+  color: var(--accent-teal-dark);
+}
+
+.accordion--handshake .accordion__serial {
+  color: var(--accent-green);
+}
+
+/* ============================================
+   TITLE STYLING
+   ============================================ */
+
+.accordion__title {
+  flex: 1;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accordion--platform .accordion__title {
+  font-size: var(--font-size-lg);
+}
+
+.accordion--resource .accordion__title {
+  font-size: var(--font-size-base);
+}
+
+.accordion--handshake .accordion__title {
+  font-size: var(--font-size-sm);
+}
+
+/* ============================================
+   STATUS BADGE IN HEADER
+   ============================================ */
+
+.accordion__status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+/* ============================================
+   NESTED INDENTATION HELPERS
+   ============================================ */
+
+.nested-level-1 {
+  padding-left: var(--spacing-4);
+}
+
+.nested-level-2 {
+  padding-left: var(--spacing-8);
+}
+
+.nested-level-3 {
+  padding-left: var(--spacing-12);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.accordion__empty {
+  padding: var(--spacing-6);
+  text-align: center;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.accordion--loading .accordion__header {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.accordion--loading .accordion__title::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: var(--spacing-2);
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,341 @@
+/* ============================================
+   PROTOCOL OS - GLOWING INPUT BORDER STYLES
+   ============================================
+   Address: 1.7.6.a
+   Purpose: Glowing border effects for focused input elements
+   ============================================ */
+
+/* ============================================
+   BASE GLOWING INPUT CLASS
+   ============================================ */
+
+.glowing-input-border {
+  position: relative;
+  transition: all var(--transition-base);
+}
+
+/* ============================================
+   TEAL GLOW (Default - Primary Focus)
+   ============================================ */
+
+.glowing-input-border--teal {
+  border-color: var(--border-color);
+}
+
+.glowing-input-border--teal:focus,
+.glowing-input-border--teal:focus-within,
+.glowing-input-border--teal.focused {
+  border-color: var(--accent-teal);
+  box-shadow: 
+    0 0 0 1px var(--accent-teal),
+    0 0 10px rgba(45, 212, 191, 0.3),
+    0 0 20px rgba(45, 212, 191, 0.1);
+  outline: none;
+}
+
+/* Animated glow pulse on focus */
+.glowing-input-border--teal.glowing-input-border--animated:focus,
+.glowing-input-border--teal.glowing-input-border--animated:focus-within {
+  animation: glow-pulse-teal-input 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-teal-input {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 1px var(--accent-teal),
+      0 0 10px rgba(45, 212, 191, 0.3),
+      0 0 20px rgba(45, 212, 191, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 2px var(--accent-teal),
+      0 0 15px rgba(45, 212, 191, 0.4),
+      0 0 30px rgba(45, 212, 191, 0.2);
+  }
+}
+
+/* ============================================
+   GREEN GLOW (Success State)
+   ============================================ */
+
+.glowing-input-border--green {
+  border-color: var(--accent-green);
+}
+
+.glowing-input-border--green:focus,
+.glowing-input-border--green:focus-within,
+.glowing-input-border--green.focused {
+  border-color: var(--accent-green);
+  box-shadow: 
+    0 0 0 1px var(--accent-green),
+    0 0 10px rgba(16, 185, 129, 0.3),
+    0 0 20px rgba(16, 185, 129, 0.1);
+  outline: none;
+}
+
+.glowing-input-border--green.glowing-input-border--animated:focus,
+.glowing-input-border--green.glowing-input-border--animated:focus-within {
+  animation: glow-pulse-green-input 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-green-input {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 1px var(--accent-green),
+      0 0 10px rgba(16, 185, 129, 0.3),
+      0 0 20px rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 2px var(--accent-green),
+      0 0 15px rgba(16, 185, 129, 0.4),
+      0 0 30px rgba(16, 185, 129, 0.2);
+  }
+}
+
+/* ============================================
+   RED GLOW (Error State)
+   ============================================ */
+
+.glowing-input-border--red {
+  border-color: var(--accent-red);
+}
+
+.glowing-input-border--red:focus,
+.glowing-input-border--red:focus-within,
+.glowing-input-border--red.focused {
+  border-color: var(--accent-red);
+  box-shadow: 
+    0 0 0 1px var(--accent-red),
+    0 0 10px rgba(239, 68, 68, 0.3),
+    0 0 20px rgba(239, 68, 68, 0.1);
+  outline: none;
+}
+
+.glowing-input-border--red.glowing-input-border--animated:focus,
+.glowing-input-border--red.glowing-input-border--animated:focus-within {
+  animation: glow-pulse-red-input 1.5s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-red-input {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 1px var(--accent-red),
+      0 0 10px rgba(239, 68, 68, 0.3),
+      0 0 20px rgba(239, 68, 68, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 2px var(--accent-red),
+      0 0 15px rgba(239, 68, 68, 0.5),
+      0 0 30px rgba(239, 68, 68, 0.2);
+  }
+}
+
+/* ============================================
+   BLUE GLOW (Info/Processing State)
+   ============================================ */
+
+.glowing-input-border--blue {
+  border-color: var(--accent-blue);
+}
+
+.glowing-input-border--blue:focus,
+.glowing-input-border--blue:focus-within,
+.glowing-input-border--blue.focused {
+  border-color: var(--accent-blue);
+  box-shadow: 
+    0 0 0 1px var(--accent-blue),
+    0 0 10px rgba(59, 130, 246, 0.3),
+    0 0 20px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* ============================================
+   ORANGE GLOW (Warning State)
+   ============================================ */
+
+.glowing-input-border--orange {
+  border-color: var(--accent-orange);
+}
+
+.glowing-input-border--orange:focus,
+.glowing-input-border--orange:focus-within,
+.glowing-input-border--orange.focused {
+  border-color: var(--accent-orange);
+  box-shadow: 
+    0 0 0 1px var(--accent-orange),
+    0 0 10px rgba(245, 158, 11, 0.3),
+    0 0 20px rgba(245, 158, 11, 0.1);
+  outline: none;
+}
+
+/* ============================================
+   SHARP BLUE GLOW (Unconfigured State)
+   ============================================ */
+
+.glowing-input-border--sharp-blue {
+  border-color: var(--accent-sharp-blue);
+}
+
+.glowing-input-border--sharp-blue:focus,
+.glowing-input-border--sharp-blue:focus-within,
+.glowing-input-border--sharp-blue.focused {
+  border-color: var(--accent-sharp-blue);
+  box-shadow: 
+    0 0 0 1px var(--accent-sharp-blue),
+    0 0 10px rgba(0, 170, 255, 0.3),
+    0 0 20px rgba(0, 170, 255, 0.1);
+  outline: none;
+}
+
+/* ============================================
+   INTENSITY VARIANTS
+   ============================================ */
+
+/* Subtle glow */
+.glowing-input-border--subtle:focus,
+.glowing-input-border--subtle:focus-within {
+  box-shadow: 0 0 5px currentColor;
+}
+
+/* Strong glow */
+.glowing-input-border--strong:focus,
+.glowing-input-border--strong:focus-within {
+  box-shadow: 
+    0 0 0 2px currentColor,
+    0 0 20px currentColor,
+    0 0 40px currentColor;
+}
+
+/* ============================================
+   WRAPPER VARIANT (for non-input elements)
+   ============================================ */
+
+.glowing-input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.glowing-input-wrapper::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  bottom: -2px;
+  left: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.glowing-input-wrapper:focus-within::after {
+  opacity: 1;
+  box-shadow: 
+    0 0 10px var(--accent-teal),
+    0 0 20px var(--accent-teal);
+}
+
+/* ============================================
+   ALWAYS-ON GLOW VARIANTS
+   ============================================ */
+
+.glowing-input-border--always-teal {
+  box-shadow: 
+    0 0 5px rgba(45, 212, 191, 0.3),
+    0 0 10px rgba(45, 212, 191, 0.1);
+}
+
+.glowing-input-border--always-green {
+  box-shadow: 
+    0 0 5px rgba(16, 185, 129, 0.3),
+    0 0 10px rgba(16, 185, 129, 0.1);
+}
+
+.glowing-input-border--always-red {
+  box-shadow: 
+    0 0 5px rgba(239, 68, 68, 0.3),
+    0 0 10px rgba(239, 68, 68, 0.1);
+}
+
+/* ============================================
+   INPUT GROUP WITH GLOW
+   ============================================ */
+
+.glowing-input-group {
+  position: relative;
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-secondary);
+  transition: all var(--transition-base);
+}
+
+.glowing-input-group:focus-within {
+  border-color: var(--accent-teal);
+  box-shadow: 
+    0 0 0 1px var(--accent-teal),
+    0 0 10px rgba(45, 212, 191, 0.3);
+}
+
+.glowing-input-group input,
+.glowing-input-group textarea {
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.glowing-input-group__prefix,
+.glowing-input-group__suffix {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-2) var(--spacing-3);
+  color: var(--text-tertiary);
+  background-color: var(--bg-tertiary);
+}
+
+.glowing-input-group__prefix {
+  border-right: 1px solid var(--border-color);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.glowing-input-group__suffix {
+  border-left: 1px solid var(--border-color);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* ============================================
+   TEXTAREA SPECIFIC
+   ============================================ */
+
+textarea.glowing-input-border {
+  resize: vertical;
+  min-height: 100px;
+}
+
+textarea.glowing-input-border:focus {
+  resize: both;
+}
+
+/* ============================================
+   DISABLED STATE
+   ============================================ */
+
+.glowing-input-border:disabled,
+.glowing-input-border.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glowing-input-border--animated:focus,
+  .glowing-input-border--animated:focus-within {
+    animation: none;
+  }
+}

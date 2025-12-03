@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./1.0_folderSourceCode/*"],
+      "@theme/*": ["./1.0_folderSourceCode/1.1_folderThemeAndStyling/*"],
+      "@database/*": ["./1.0_folderSourceCode/1.2_folderDatabaseProviders/*"],
+      "@registry/*": ["./1.0_folderSourceCode/1.3_folderProtocolRegistry/*"],
+      "@protocols/*": ["./1.0_folderSourceCode/1.4_folderProtocolImplementations/*"],
+      "@context/*": ["./1.0_folderSourceCode/1.5_folderContextStateManagement/*"],
+      "@pages/*": ["./1.0_folderSourceCode/1.6_folderApplicationPages/*"],
+      "@ui/*": ["./1.0_folderSourceCode/1.7_folderUiComponents/*"],
+      "@utils/*": ["./1.0_folderSourceCode/1.8_folderUtilityFunctions/*"],
+      "@types/*": ["./1.0_folderSourceCode/1.9_folderTypeDefinitions/*"]
+    }
+  },
+  "include": [
+    "main.tsx",
+    "1.0_folderSourceCode/**/*",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

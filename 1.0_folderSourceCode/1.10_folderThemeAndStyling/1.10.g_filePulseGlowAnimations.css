@@ -1,0 +1,449 @@
+/* ============================================
+   PROTOCOL OS - PULSE GLOW ANIMATIONS
+   ============================================
+   Address: 1.10.g
+   Purpose: Pulsing and glowing effects for UI elements
+   ============================================ */
+
+/* ============================================
+   BASIC PULSE GLOW
+   ============================================ */
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+}
+
+/* ============================================
+   COLOR-SPECIFIC PULSE GLOWS
+   ============================================ */
+
+/* Teal pulse */
+.pulse-glow--teal {
+  animation: pulse-glow-teal 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-teal {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--accent-teal);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px var(--accent-teal),
+      0 0 20px var(--accent-teal),
+      0 0 30px rgba(45, 212, 191, 0.5);
+  }
+}
+
+/* Green pulse (healthy/success) */
+.pulse-glow--green {
+  animation: pulse-glow-green 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-green {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--accent-green);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px var(--accent-green),
+      0 0 20px var(--accent-green),
+      0 0 30px rgba(16, 185, 129, 0.5);
+  }
+}
+
+/* Red pulse (error/alert) */
+.pulse-glow--red {
+  animation: pulse-glow-red 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-red {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--accent-red);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px var(--accent-red),
+      0 0 20px var(--accent-red),
+      0 0 35px rgba(239, 68, 68, 0.6);
+  }
+}
+
+/* Blue pulse (info/archived) */
+.pulse-glow--blue {
+  animation: pulse-glow-blue 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-blue {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--accent-blue);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px var(--accent-blue),
+      0 0 20px var(--accent-blue),
+      0 0 30px rgba(59, 130, 246, 0.5);
+  }
+}
+
+/* Orange pulse (warning/processing) */
+.pulse-glow--orange {
+  animation: pulse-glow-orange 1s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-orange {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--accent-orange);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px var(--accent-orange),
+      0 0 25px var(--accent-orange),
+      0 0 40px rgba(245, 158, 11, 0.6);
+  }
+}
+
+/* ============================================
+   BORDER GLOW
+   ============================================ */
+
+.border-glow {
+  position: relative;
+}
+
+.border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    45deg,
+    var(--accent-teal),
+    var(--accent-cyan),
+    var(--accent-teal)
+  );
+  background-size: 200% 200%;
+  z-index: -1;
+  animation: border-glow-rotate 3s linear infinite;
+  opacity: 0.7;
+  filter: blur(4px);
+}
+
+@keyframes border-glow-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ============================================
+   TEXT GLOW
+   ============================================ */
+
+.text-glow {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.text-glow--teal {
+  color: var(--accent-teal);
+  text-shadow: 
+    0 0 5px var(--accent-teal),
+    0 0 10px var(--accent-teal),
+    0 0 20px rgba(45, 212, 191, 0.5);
+}
+
+.text-glow--pulse {
+  animation: text-glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes text-glow-pulse {
+  0%, 100% {
+    text-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    text-shadow: 
+      0 0 10px currentColor,
+      0 0 20px currentColor,
+      0 0 30px currentColor;
+  }
+}
+
+/* ============================================
+   INDICATOR DOT
+   ============================================ */
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.indicator-dot--pulse {
+  animation: indicator-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes indicator-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+/* Status-specific indicator dots */
+.indicator-dot--online {
+  background: var(--accent-green);
+  box-shadow: 0 0 6px var(--accent-green);
+  animation: indicator-pulse-green 2s ease-in-out infinite;
+}
+
+.indicator-dot--offline {
+  background: var(--accent-red);
+  box-shadow: 0 0 6px var(--accent-red);
+}
+
+.indicator-dot--busy {
+  background: var(--accent-orange);
+  box-shadow: 0 0 6px var(--accent-orange);
+  animation: indicator-pulse-orange 1s ease-in-out infinite;
+}
+
+.indicator-dot--idle {
+  background: var(--text-tertiary);
+}
+
+@keyframes indicator-pulse-green {
+  0%, 100% {
+    box-shadow: 0 0 6px var(--accent-green);
+  }
+  50% {
+    box-shadow: 0 0 12px var(--accent-green), 0 0 18px var(--accent-green);
+  }
+}
+
+@keyframes indicator-pulse-orange {
+  0%, 100% {
+    box-shadow: 0 0 6px var(--accent-orange);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 12px var(--accent-orange);
+    transform: scale(1.15);
+  }
+}
+
+/* ============================================
+   RIPPLE EFFECT
+   ============================================ */
+
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(45, 212, 191, 0.3) 0%,
+    transparent 70%
+  );
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ripple:active::after {
+  animation: ripple-effect 0.6s ease-out;
+}
+
+@keyframes ripple-effect {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   BREATHING GLOW (Subtle continuous)
+   ============================================ */
+
+.breathing-glow {
+  animation: breathing 4s ease-in-out infinite;
+}
+
+@keyframes breathing {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 15px currentColor;
+  }
+}
+
+/* ============================================
+   ATTENTION PULSE (For new items)
+   ============================================ */
+
+.attention-pulse {
+  animation: attention-pulse 0.5s ease-out 3;
+}
+
+@keyframes attention-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.7);
+  }
+  70% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(45, 212, 191, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(45, 212, 191, 0);
+  }
+}
+
+/* ============================================
+   SCANNER LINE EFFECT
+   ============================================ */
+
+.scanner-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanner-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(45, 212, 191, 0.1),
+    rgba(45, 212, 191, 0.2),
+    rgba(45, 212, 191, 0.1),
+    transparent
+  );
+  animation: scanner-sweep 2s linear infinite;
+}
+
+@keyframes scanner-sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* ============================================
+   FOCUS RING ANIMATION
+   ============================================ */
+
+.focus-ring-animated:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.5);
+  animation: focus-ring-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes focus-ring-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(45, 212, 191, 0.3);
+  }
+}
+
+/* ============================================
+   GLOW BADGE
+   ============================================ */
+
+.glow-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-full);
+  animation: glow-badge-pulse 2s ease-in-out infinite;
+}
+
+.glow-badge--success {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.glow-badge--error {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red);
+  animation-duration: 1s;
+}
+
+@keyframes glow-badge-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 10px currentColor, 0 0 15px currentColor;
+  }
+}
+
+/* ============================================
+   UTILITY: DISABLE ANIMATIONS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-glow,
+  .pulse-glow--teal,
+  .pulse-glow--green,
+  .pulse-glow--red,
+  .pulse-glow--blue,
+  .pulse-glow--orange,
+  .border-glow::before,
+  .text-glow--pulse,
+  .indicator-dot--pulse,
+  .indicator-dot--online,
+  .indicator-dot--busy,
+  .breathing-glow,
+  .attention-pulse,
+  .scanner-line::before,
+  .focus-ring-animated:focus,
+  .glow-badge {
+    animation: none;
+  }
+}

@@ -1,0 +1,455 @@
+/* ============================================
+   PROTOCOL OS - EKG ANIMATIONS
+   ============================================
+   Address: 1.10.c
+   Purpose: EKG-style heartbeat animations for status indicators
+   ============================================ */
+
+/* ============================================
+   EKG CONTAINER
+   ============================================ */
+
+.ekg-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================
+   EKG LINE BASE
+   ============================================ */
+
+.ekg-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+/* ============================================
+   EKG PULSE DOT
+   ============================================ */
+
+.ekg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   HEALTHY STATE - Green pulsing
+   ============================================ */
+
+.ekg-healthy {
+  color: var(--accent-green);
+}
+
+.ekg-healthy .ekg-dot {
+  animation: ekg-pulse-healthy 1.5s ease-in-out infinite;
+}
+
+.ekg-healthy .ekg-line {
+  animation: ekg-line-healthy 1.5s ease-in-out infinite;
+}
+
+@keyframes ekg-pulse-healthy {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 6px var(--accent-green);
+  }
+  25% {
+    transform: scale(1.3);
+    box-shadow: 0 0 12px var(--accent-green), 0 0 20px var(--accent-green);
+  }
+  50% {
+    transform: scale(0.9);
+    box-shadow: 0 0 4px var(--accent-green);
+  }
+  75% {
+    transform: scale(1.1);
+    box-shadow: 0 0 8px var(--accent-green);
+  }
+}
+
+@keyframes ekg-line-healthy {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scaleX(1);
+  }
+  25% {
+    opacity: 0.6;
+    transform: scaleX(1.1);
+  }
+  50% {
+    opacity: 0.2;
+    transform: scaleX(0.95);
+  }
+}
+
+/* ============================================
+   FAILED STATE - Red alert
+   ============================================ */
+
+.ekg-failed {
+  color: var(--accent-red);
+}
+
+.ekg-failed .ekg-dot {
+  animation: ekg-pulse-failed 0.8s ease-in-out infinite;
+}
+
+.ekg-failed .ekg-line {
+  animation: ekg-line-failed 0.8s ease-in-out infinite;
+}
+
+@keyframes ekg-pulse-failed {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px var(--accent-red);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    box-shadow: 0 0 16px var(--accent-red), 0 0 24px var(--accent-red);
+    opacity: 0.8;
+  }
+}
+
+@keyframes ekg-line-failed {
+  0%, 100% {
+    opacity: 0.4;
+    background: var(--accent-red);
+  }
+  50% {
+    opacity: 0.7;
+    background: var(--accent-red-light);
+  }
+}
+
+/* ============================================
+   UNCONFIGURED STATE - Blue steady
+   ============================================ */
+
+.ekg-unconfigured {
+  color: var(--accent-sharp-blue);
+}
+
+.ekg-unconfigured .ekg-dot {
+  animation: ekg-pulse-unconfigured 2.5s ease-in-out infinite;
+}
+
+.ekg-unconfigured .ekg-line {
+  opacity: 0.2;
+}
+
+@keyframes ekg-pulse-unconfigured {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+    box-shadow: 0 0 4px var(--accent-sharp-blue);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 0 8px var(--accent-sharp-blue);
+  }
+}
+
+/* ============================================
+   THROBBING/PROCESSING STATE - Animated pulse
+   ============================================ */
+
+.ekg-throbbing {
+  color: var(--accent-orange);
+}
+
+.ekg-throbbing .ekg-dot {
+  animation: ekg-throb 0.6s ease-in-out infinite;
+}
+
+.ekg-throbbing .ekg-line {
+  animation: ekg-line-throb 0.6s ease-in-out infinite;
+}
+
+@keyframes ekg-throb {
+  0%, 100% {
+    transform: scale(0.8);
+    box-shadow: 0 0 4px var(--accent-orange);
+  }
+  50% {
+    transform: scale(1.5);
+    box-shadow: 0 0 20px var(--accent-orange), 0 0 30px var(--accent-orange);
+  }
+}
+
+@keyframes ekg-line-throb {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleY(2);
+  }
+}
+
+/* ============================================
+   EKG WAVEFORM (SVG-based)
+   ============================================ */
+
+.ekg-waveform {
+  width: 60px;
+  height: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ekg-waveform svg {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  left: 0;
+}
+
+.ekg-waveform--healthy svg {
+  animation: ekg-scroll 1.5s linear infinite;
+}
+
+.ekg-waveform--healthy path {
+  stroke: var(--accent-green);
+  fill: none;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 3px var(--accent-green));
+}
+
+.ekg-waveform--failed svg {
+  animation: ekg-scroll 0.8s linear infinite;
+}
+
+.ekg-waveform--failed path {
+  stroke: var(--accent-red);
+  fill: none;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 3px var(--accent-red));
+}
+
+@keyframes ekg-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ============================================
+   EKG WITH TRAILING GLOW
+   ============================================ */
+
+.ekg-glow-trail {
+  position: relative;
+  width: 50px;
+  height: 20px;
+}
+
+.ekg-glow-trail::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 10px var(--accent-green);
+  animation: ekg-travel 1.5s ease-in-out infinite;
+}
+
+.ekg-glow-trail::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-green),
+    transparent
+  );
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.3;
+}
+
+@keyframes ekg-travel {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% - 6px);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   HEARTBEAT ICON ANIMATION
+   ============================================ */
+
+.heartbeat-icon {
+  display: inline-block;
+  font-size: 1.25rem;
+  color: var(--accent-green);
+  animation: heartbeat 1.2s ease-in-out infinite;
+}
+
+.heartbeat-icon--healthy {
+  color: var(--accent-green);
+}
+
+.heartbeat-icon--failed {
+  color: var(--accent-red);
+  animation: heartbeat-failed 0.6s ease-in-out infinite;
+}
+
+.heartbeat-icon--processing {
+  color: var(--accent-orange);
+  animation: heartbeat-processing 0.4s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.15);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+@keyframes heartbeat-failed {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+@keyframes heartbeat-processing {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+/* ============================================
+   COMPACT EKG INDICATOR
+   ============================================ */
+
+.ekg-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.ekg-indicator--healthy {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-green);
+}
+
+.ekg-indicator--failed {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-red);
+}
+
+.ekg-indicator--unconfigured {
+  background: rgba(0, 170, 255, 0.1);
+  color: var(--accent-sharp-blue);
+}
+
+.ekg-indicator--processing {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent-orange);
+}
+
+/* ============================================
+   RING PULSE (Alternative indicator)
+   ============================================ */
+
+.ring-pulse {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+.ring-pulse::before,
+.ring-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.ring-pulse::before {
+  background: currentColor;
+}
+
+.ring-pulse::after {
+  border: 2px solid currentColor;
+  animation: ring-expand 1.5s ease-out infinite;
+}
+
+@keyframes ring-expand {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.ring-pulse--healthy {
+  color: var(--accent-green);
+}
+
+.ring-pulse--failed {
+  color: var(--accent-red);
+}
+
+.ring-pulse--failed::after {
+  animation-duration: 0.8s;
+}

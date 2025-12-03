@@ -1,0 +1,73 @@
+# ============================================
+# PROTOCOL OS - RENDER DEPLOYMENT CONFIGURATION
+# ============================================
+# Address: 0.1.g
+# Purpose: Configure Render.com deployment settings
+# Documentation: https://render.com/docs/yaml-spec
+# ============================================
+
+services:
+  # --- PRIMARY WEB SERVICE ---
+  - type: web
+    name: protocol-os-handshake
+    env: node
+    region: oregon
+    plan: free
+    branch: main
+    
+    # --- BUILD CONFIGURATION ---
+    buildCommand: |
+      npm install
+      npm run build
+    
+    # --- START COMMAND ---
+    # Uses Vite preview server for production
+    startCommand: npm run preview -- --host 0.0.0.0 --port $PORT
+    
+    # --- HEALTH CHECK ---
+    healthCheckPath: /
+    
+    # --- ENVIRONMENT VARIABLES ---
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_APP_VERSION
+        value: 1.0.0
+      # Database provider - default to localStorage for template
+      - key: VITE_ACTIVE_DATABASE_PROVIDER
+        value: localStorage
+      # Add your own environment variables below
+      # - key: VITE_SUPABASE_PROJECT_URL
+      #   sync: false  # Set manually in Render dashboard
+      # - key: VITE_SUPABASE_ANON_KEY
+      #   sync: false
+    
+    # --- AUTO DEPLOY ---
+    autoDeploy: true
+    
+    # --- BUILD FILTER ---
+    # Only rebuild when these paths change
+    buildFilter:
+      paths:
+        - 0.1_folderBuildConfiguration/**
+        - 0.2_folderPublicAssets/**
+        - 1.0_folderSourceCode/**
+      ignoredPaths:
+        - "**/*.md"
+        - "**/*.txt"
+
+# --- OPTIONAL: DATABASE SERVICE ---
+# Uncomment if you want Render to provision a PostgreSQL database
+# databases:
+#   - name: protocol-os-db
+#     databaseName: protocol_os
+#     user: protocol_os_user
+#     plan: free
+#     region: oregon
+
+# --- OPTIONAL: ENVIRONMENT GROUPS ---
+# envVarGroups:
+#   - name: protocol-os-secrets
+#     envVars:
+#       - key: VITE_OAUTH_CLIENT_SECRET
+#         sync: false

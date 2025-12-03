@@ -1,0 +1,68 @@
+{
+  "name": "protocol-os-universal-api-handshake",
+  "version": "1.0.0",
+  "description": "Universal API Handshake - Protocol Operating System - Server-Side Architecture. A comprehensive template for managing multiple authentication protocols and API integrations.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "api",
+    "authentication",
+    "oauth",
+    "oauth2",
+    "pkce",
+    "rest-api",
+    "graphql",
+    "websocket",
+    "soap",
+    "curl",
+    "handshake",
+    "protocol",
+    "universal",
+    "template",
+    "intent-tensor-theory",
+    "ghostless-coding"
+  ],
+  "author": "Intent Tensor Theory Institute",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intent-tensor-theory/0.0_git_universal_protocol_os_handshake"
+  },
+  "homepage": "https://intent-tensor-theory.com",
+  "bugs": {
+    "url": "https://github.com/intent-tensor-theory/0.0_git_universal_protocol_os_handshake/issues"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/uuid": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "optionalDependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "firebase": "^10.7.0",
+    "pg": "^8.11.0",
+    "better-sqlite3": "^9.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

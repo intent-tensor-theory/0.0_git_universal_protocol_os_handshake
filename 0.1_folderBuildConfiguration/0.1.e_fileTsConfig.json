@@ -1,0 +1,55 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["1.0_folderSourceCode/*"],
+      "@config/*": ["1.0_folderSourceCode/1.1_folderApplicationConfiguration/*"],
+      "@database/*": ["1.0_folderSourceCode/1.2_folderDatabasePersistenceProviders/*"],
+      "@protocols/*": ["1.0_folderSourceCode/1.3_folderProtocolHandshakeRegistry/*"],
+      "@tree/*": ["1.0_folderSourceCode/1.4_folderPlatformResourceHandshakeTree/*"],
+      "@saved/*": ["1.0_folderSourceCode/1.5_folderSavedHandshakesLibrary/*"],
+      "@output/*": ["1.0_folderSourceCode/1.6_folderExecutionOutputDisplay/*"],
+      "@components/*": ["1.0_folderSourceCode/1.7_folderSharedUserInterfaceComponents/*"],
+      "@utils/*": ["1.0_folderSourceCode/1.8_folderSharedUtilities/*"],
+      "@types/*": ["1.0_folderSourceCode/1.9_folderSharedTypeDefinitions/*"],
+      "@theme/*": ["1.0_folderSourceCode/1.10_folderThemeAndStyling/*"]
+    }
+  },
+  "include": [
+    "1.0_folderSourceCode/**/*.ts",
+    "1.0_folderSourceCode/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ]
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/0.2_folderPublicAssets/0.2.a_fileFavicon.svg" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Protocol OS - Universal API Handshake</title>
+    <meta name="title" content="Protocol OS - Universal API Handshake" />
+    <meta name="description" content="Universal API Handshake - Protocol Operating System - Server-Side Architecture. Manage multiple authentication protocols and API integrations from a single interface." />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://github.com/intent-tensor-theory/0.0_git_universal_protocol_os_handshake" />
+    <meta property="og:title" content="Protocol OS - Universal API Handshake" />
+    <meta property="og:description" content="Universal API Handshake - Protocol Operating System - Server-Side Architecture. Manage multiple authentication protocols and API integrations from a single interface." />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://github.com/intent-tensor-theory/0.0_git_universal_protocol_os_handshake" />
+    <meta property="twitter:title" content="Protocol OS - Universal API Handshake" />
+    <meta property="twitter:description" content="Universal API Handshake - Protocol Operating System - Server-Side Architecture. Manage multiple authentication protocols and API integrations from a single interface." />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#011a1a" />
+    
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- System Font Stack Fallback -->
+    <style>
+      /* Critical CSS - Prevents flash of unstyled content */
+      :root {
+        --bg-primary: #011a1a;
+        --text-primary: #f9fafb;
+      }
+      
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading state */
+      .protocol-os-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-size: 1.25rem;
+        color: #2dd4bf;
+      }
+      
+      .protocol-os-loading::after {
+        content: 'Initializing Protocol OS...';
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="protocol-os-loading"></div>
+    </div>
+    <script type="module" src="/1.0_folderSourceCode/1.0.a_fileMain.tsx"></script>
+  </body>
+</html>

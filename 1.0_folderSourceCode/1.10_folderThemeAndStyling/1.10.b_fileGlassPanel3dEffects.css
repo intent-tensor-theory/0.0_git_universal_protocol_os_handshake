@@ -1,0 +1,343 @@
+/* ============================================
+   PROTOCOL OS - GLASS PANEL 3D EFFECTS
+   ============================================
+   Address: 1.10.b
+   Purpose: Frosted glass panel styling with 3D depth
+   ============================================ */
+
+/* ============================================
+   BASE GLASS PANEL
+   ============================================ */
+
+.glass-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(2, 52, 52, 0.8) 0%,
+    rgba(1, 26, 26, 0.9) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    /* Outer shadow for depth */
+    0 4px 6px -1px var(--shadow-dark),
+    0 2px 4px -2px var(--shadow-dark),
+    /* Inner highlight for 3D effect */
+    inset 0 1px 0 0 var(--shadow-light),
+    inset 1px 0 0 0 var(--shadow-light);
+  transition: 
+    box-shadow var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-base);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-color-light);
+  box-shadow:
+    0 8px 12px -2px var(--shadow-dark),
+    0 4px 6px -2px var(--shadow-dark),
+    inset 0 1px 0 0 var(--shadow-light),
+    inset 1px 0 0 0 var(--shadow-light);
+}
+
+/* ============================================
+   GLASS PANEL VARIANTS
+   ============================================ */
+
+/* Elevated variant - more prominent shadow */
+.glass-panel--elevated {
+  box-shadow:
+    0 10px 15px -3px var(--shadow-dark),
+    0 4px 6px -4px var(--shadow-dark),
+    inset 0 1px 0 0 var(--shadow-light),
+    inset 1px 0 0 0 var(--shadow-light);
+}
+
+.glass-panel--elevated:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 20px 25px -5px var(--shadow-dark),
+    0 8px 10px -6px var(--shadow-dark),
+    inset 0 1px 0 0 var(--shadow-light),
+    inset 1px 0 0 0 var(--shadow-light);
+}
+
+/* Subtle variant - less prominent */
+.glass-panel--subtle {
+  background: linear-gradient(
+    135deg,
+    rgba(2, 52, 52, 0.5) 0%,
+    rgba(1, 26, 26, 0.6) 100%
+  );
+  box-shadow:
+    0 2px 4px -1px var(--shadow-dark),
+    inset 0 1px 0 0 var(--shadow-light);
+}
+
+/* Inset variant - recessed into the surface */
+.glass-panel--inset {
+  background: linear-gradient(
+    135deg,
+    rgba(1, 20, 20, 0.9) 0%,
+    rgba(2, 40, 40, 0.8) 100%
+  );
+  box-shadow:
+    inset 0 2px 4px 0 var(--shadow-darker),
+    inset 0 -1px 0 0 var(--shadow-light);
+  border-color: rgba(0, 102, 102, 0.5);
+}
+
+/* ============================================
+   GLASS CARD (For content containers)
+   ============================================ */
+
+.glass-card {
+  background: linear-gradient(
+    145deg,
+    rgba(3, 78, 78, 0.4) 0%,
+    rgba(2, 52, 52, 0.6) 50%,
+    rgba(1, 26, 26, 0.8) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  box-shadow:
+    0 4px 6px -1px var(--shadow-dark),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+  transition: all var(--transition-base);
+}
+
+.glass-card:hover {
+  border-color: var(--accent-teal);
+  box-shadow:
+    0 6px 10px -2px var(--shadow-dark),
+    0 0 0 1px var(--accent-teal),
+    inset 0 1px 0 0 rgba(45, 212, 191, 0.1);
+}
+
+/* ============================================
+   GLASS HEADER (For section headers)
+   ============================================ */
+
+.glass-header {
+  background: linear-gradient(
+    90deg,
+    rgba(45, 212, 191, 0.15) 0%,
+    rgba(45, 212, 191, 0.05) 50%,
+    transparent 100%
+  );
+  border-left: 3px solid var(--accent-teal);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: var(--spacing-3) var(--spacing-4);
+  box-shadow:
+    inset 0 1px 0 0 var(--shadow-light),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   GLASS MODAL
+   ============================================ */
+
+.glass-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 26, 26, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: var(--z-modal-backdrop);
+}
+
+.glass-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    145deg,
+    rgba(3, 78, 78, 0.95) 0%,
+    rgba(2, 52, 52, 0.98) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--accent-teal);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-6);
+  box-shadow:
+    0 25px 50px -12px var(--shadow-darker),
+    0 0 0 1px var(--accent-teal),
+    0 0 30px rgba(45, 212, 191, 0.2),
+    inset 0 1px 0 0 var(--shadow-light);
+  z-index: var(--z-modal);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+/* ============================================
+   GLASS TOOLTIP
+   ============================================ */
+
+.glass-tooltip {
+  background: linear-gradient(
+    135deg,
+    rgba(4, 88, 88, 0.95) 0%,
+    rgba(2, 52, 52, 0.98) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-sm);
+  box-shadow:
+    0 4px 6px -1px var(--shadow-dark),
+    0 0 0 1px rgba(45, 212, 191, 0.1);
+  z-index: var(--z-tooltip);
+}
+
+/* ============================================
+   GLASS DROPDOWN
+   ============================================ */
+
+.glass-dropdown {
+  background: linear-gradient(
+    180deg,
+    rgba(3, 78, 78, 0.95) 0%,
+    rgba(2, 52, 52, 0.98) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 10px 15px -3px var(--shadow-dark),
+    0 4px 6px -4px var(--shadow-dark),
+    inset 0 1px 0 0 var(--shadow-light);
+  overflow: hidden;
+  z-index: var(--z-dropdown);
+}
+
+.glass-dropdown__item {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid rgba(0, 102, 102, 0.3);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.glass-dropdown__item:last-child {
+  border-bottom: none;
+}
+
+.glass-dropdown__item:hover {
+  background: rgba(45, 212, 191, 0.1);
+}
+
+.glass-dropdown__item--selected {
+  background: rgba(45, 212, 191, 0.15);
+  border-left: 2px solid var(--accent-teal);
+}
+
+/* ============================================
+   GLASS SECTION (Accordion containers)
+   ============================================ */
+
+.glass-section {
+  background: linear-gradient(
+    135deg,
+    rgba(2, 52, 52, 0.6) 0%,
+    rgba(1, 26, 26, 0.7) 100%
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--spacing-3);
+  box-shadow:
+    0 2px 4px -1px var(--shadow-dark),
+    inset 0 1px 0 0 var(--shadow-light);
+}
+
+.glass-section--expanded {
+  border-color: var(--accent-teal);
+  box-shadow:
+    0 4px 8px -2px var(--shadow-dark),
+    0 0 0 1px rgba(45, 212, 191, 0.3),
+    inset 0 1px 0 0 var(--shadow-light);
+}
+
+/* ============================================
+   GLASS BADGE
+   ============================================ */
+
+.glass-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  background: rgba(45, 212, 191, 0.15);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: var(--radius-full);
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--accent-teal);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-badge--success {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--accent-green);
+}
+
+.glass-badge--error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--accent-red);
+}
+
+.glass-badge--warning {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--accent-orange);
+}
+
+.glass-badge--info {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--accent-blue);
+}
+
+/* ============================================
+   SHINE EFFECT (Decorative)
+   ============================================ */
+
+.glass-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.03),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.glass-shine:hover::before {
+  left: 150%;
+}
