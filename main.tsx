@@ -7,12 +7,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './1.0_folderSourceCode/1.0.b_fileApp';
-
-// Import global styles
-import './1.0_folderSourceCode/1.10_folderThemeAndStyling/1.10.a_fileGlobalCssVariables.css';
-import './1.0_folderSourceCode/1.10_folderThemeAndStyling/1.10.b_fileGlassPanel3dEffects.css';
-import './1.0_folderSourceCode/1.10_folderThemeAndStyling/1.10.c_fileEkgAnimations.css';
+import App from './1.0_folderSourceCode/1.0.a_fileApp';
 
 /**
  * Initialize and mount the application
