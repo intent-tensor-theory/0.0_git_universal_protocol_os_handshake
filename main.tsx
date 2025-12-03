@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './1.0_folderSourceCode/1.0.a_fileApp';
+import App from './1.0_folderSourceCode/1.0.b_fileApp';
 
 /**
  * Initialize and mount the application
