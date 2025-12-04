@@ -658,12 +658,31 @@ details[open] {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  transition: color 0.2s;
+  transition: all 0.3s;
+  animation: pulseGlow 2s ease-in-out infinite;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(45, 212, 191, 0.3),
+                0 0 10px rgba(45, 212, 191, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.5),
+                0 0 30px rgba(45, 212, 191, 0.2);
+  }
 }
 
 .handshake-step-header--clickable:hover {
   color: var(--accent-teal);
+  animation: none;
+  box-shadow: 0 0 20px rgba(45, 212, 191, 0.6),
+              0 0 40px rgba(45, 212, 191, 0.3);
 }
 
 .help-icon {
@@ -677,12 +696,12 @@ details[open] {
   border-radius: 50%;
   font-size: 0.75rem;
   font-weight: 700;
-  margin-left: auto;
-  opacity: 0.6;
+  opacity: 0.8;
   transition: all 0.2s;
 }
 
 .handshake-step-header--clickable:hover .help-icon {
   opacity: 1;
-  background: rgba(45, 212, 191, 0.4);
+  background: rgba(45, 212, 191, 0.5);
+  transform: scale(1.1);
 }
