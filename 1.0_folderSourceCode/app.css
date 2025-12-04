@@ -128,6 +128,73 @@ body {
 /* MAIN */
 .app__main { padding: 2rem; }
 
+/* SAVED ACTIVE SECTION */
+.saved-active-section {
+  margin-bottom: 2rem;
+}
+
+.saved-active-header {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: color 0.2s;
+}
+
+.saved-active-header:hover {
+  color: var(--accent-teal);
+}
+
+.header-chevron {
+  color: var(--accent-teal);
+  font-size: 0.75rem;
+}
+
+.saved-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.saved-active-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+}
+
+.saved-active-container.is-visible {
+  max-height: 2000px;
+  padding: 1rem 0;
+}
+
+/* WORKING FORM SECTION */
+.working-form-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--accent-teal);
+}
+
+.working-form-header {
+  font-size: 1.25rem;
+  color: var(--accent-teal);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.plus-hint {
+  color: var(--accent-green);
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.saved-platform-row {
+  margin-bottom: 1rem;
+}
+
 .main-content-header {
   font-size: 1.125rem;
   color: var(--text-secondary);
@@ -435,6 +502,46 @@ details[open] {
 
 .btn--add { background: var(--accent-green); color: white; }
 .btn--add:hover { filter: brightness(1.2); }
+
+/* SIMPLE GREEN PLUS BUTTON */
+.btn-plus {
+  background: transparent;
+  border: none;
+  color: var(--accent-green);
+  font-size: 2.5rem;
+  font-weight: 300;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, color 0.2s;
+}
+.btn-plus:hover {
+  color: #34d399;
+  transform: scale(1.2);
+}
+
+.btn--save {
+  background: var(--accent-green);
+  color: white;
+}
+
+.btn--archive {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
+}
+
+.btn--inject {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+  border: 1px solid #a855f7;
+  margin-top: 0.5rem;
+}
 
 .btn--add-small {
   padding: 0.4rem 0.75rem;

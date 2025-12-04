@@ -277,14 +277,24 @@ const CredentialsForm: React.FC<{ authType: string }> = ({ authType }) => {
 const App: React.FC = () => {
   console.log('🔴 APP RENDER');
 
-  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  // SAVED platforms (persisted)
+  const [savedActivePlatforms, setSavedActivePlatforms] = useState<Platform[]>([]);
   const [archivedPlatforms, setArchivedPlatforms] = useState<Platform[]>([]);
+  
+  // WORKING platform (the form you're currently filling out)
+  const [workingPlatform, setWorkingPlatform] = useState<Platform | null>(null);
+  
+  // Dropdown visibility
   const [archiveVisible, setArchiveVisible] = useState(false);
+  const [savedActiveVisible, setSavedActiveVisible] = useState(false);
 
   // Collect all serials for uniqueness check
   const getAllSerials = useCallback((): string[] => {
     const serials: string[] = [];
-    [...platforms, ...archivedPlatforms].forEach(p => {
+    const allPlatforms = [...savedActivePlatforms, ...archivedPlatforms];
+    if (workingPlatform) allPlatforms.push(workingPlatform);
+    
+    allPlatforms.forEach(p => {
       serials.push(p.serial);
       p.contributors.forEach(r => {
         serials.push(r.serial);
@@ -297,29 +307,38 @@ const App: React.FC = () => {
       });
     });
     return serials;
-  }, [platforms, archivedPlatforms]);
+  }, [savedActivePlatforms, archivedPlatforms, workingPlatform]);
 
   useEffect(() => {
     console.log('🟢 APP MOUNT');
     logger.success('App.Init', 'Protocol OS mounted', { commentary: COMMENTARY.SYSTEM_INIT });
   }, []);
 
-  // PLATFORM HANDLERS
-  const handleAddPlatform = useCallback(() => {
-    console.log('🖱️ +Platform');
+  // CREATE NEW WORKING PLATFORM
+  const handleStartNewPlatform = useCallback(() => {
+    console.log('🖱️ +New Platform');
     const serial = generateUniqueSerial('PLAT', getAllSerials());
     const newPlatform: Platform = {
       id: 'plat-' + Date.now(),
       serial,
-      name: 'Untitled Platform',
+      name: '',
       url: '', description: '', doc_url: '', auth_notes: '',
       contributors: [],
       isMaster: false,
       isExpanded: true,
     };
-    setPlatforms(prev => [...prev, newPlatform]);
+    setWorkingPlatform(newPlatform);
   }, [getAllSerials]);
 
+  // SAVE WORKING PLATFORM TO SAVED ACTIVE
+  const handleSaveWorkingPlatform = useCallback(() => {
+    if (!workingPlatform) return;
+    console.log('💾 Save Platform:', workingPlatform.serial);
+    setSavedActivePlatforms(prev => [...prev, workingPlatform]);
+    setWorkingPlatform(null); // Clear form for next
+  }, [workingPlatform]);
+
+  // ADD TO ARCHIVED
   const handleAddArchivedPlatform = useCallback(() => {
     console.log('🖱️ +ArchivedPlatform');
     const serial = generateUniqueSerial('PLAT', getAllSerials());
@@ -335,16 +354,45 @@ const App: React.FC = () => {
     setArchivedPlatforms(prev => [...prev, newPlatform]);
   }, [getAllSerials]);
 
+  // UPDATE PLATFORM (works on working, saved, or archived)
   const handleUpdatePlatform = useCallback((id: string, updates: Partial<Platform>) => {
-    setPlatforms(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    setArchivedPlatforms(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-  }, []);
+    if (workingPlatform?.id === id) {
+      setWorkingPlatform(prev => prev ? { ...prev, ...updates } : null);
+    } else {
+      setSavedActivePlatforms(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+      setArchivedPlatforms(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    }
+  }, [workingPlatform]);
 
+  // DELETE PLATFORM
   const handleDeletePlatform = useCallback((id: string) => {
     console.log('🗑️ Delete Platform:', id);
-    setPlatforms(prev => prev.filter(p => p.id !== id));
-    setArchivedPlatforms(prev => prev.filter(p => p.id !== id));
-  }, []);
+    if (workingPlatform?.id === id) {
+      setWorkingPlatform(null);
+    } else {
+      setSavedActivePlatforms(prev => prev.filter(p => p.id !== id));
+      setArchivedPlatforms(prev => prev.filter(p => p.id !== id));
+    }
+  }, [workingPlatform]);
+
+  // INJECT FROM ARCHIVE TO ACTIVE
+  const handleInjectFromArchive = useCallback((platformId: string) => {
+    const platform = archivedPlatforms.find(p => p.id === platformId);
+    if (platform) {
+      console.log('💉 Inject from archive:', platform.serial);
+      setSavedActivePlatforms(prev => [...prev, { ...platform, id: 'plat-' + Date.now() }]);
+    }
+  }, [archivedPlatforms]);
+
+  // ARCHIVE FROM ACTIVE
+  const handleArchiveFromActive = useCallback((platformId: string) => {
+    const platform = savedActivePlatforms.find(p => p.id === platformId);
+    if (platform) {
+      console.log('📦 Archive from active:', platform.serial);
+      setArchivedPlatforms(prev => [...prev, { ...platform, isMaster: true }]);
+      setSavedActivePlatforms(prev => prev.filter(p => p.id !== platformId));
+    }
+  }, [savedActivePlatforms]);
 
   // RESOURCE HANDLERS
   const handleAddResource = useCallback((platformId: string) => {
@@ -353,30 +401,46 @@ const App: React.FC = () => {
     const newResource: ApiResource = {
       id: 'res-' + Date.now(),
       serial,
-      title: 'Untitled API Resource',
+      title: '',
       url: '', description: '', doc_url: '', notes: '',
       handshakes: [],
       isExpanded: true,
     };
-    const update = (p: Platform) => p.id === platformId 
-      ? { ...p, contributors: [...p.contributors, newResource] } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
-  }, [getAllSerials]);
+    
+    if (workingPlatform?.id === platformId) {
+      setWorkingPlatform(prev => prev ? { ...prev, contributors: [...prev.contributors, newResource] } : null);
+    } else {
+      const update = (p: Platform) => p.id === platformId 
+        ? { ...p, contributors: [...p.contributors, newResource] } : p;
+      setSavedActivePlatforms(prev => prev.map(update));
+      setArchivedPlatforms(prev => prev.map(update));
+    }
+  }, [getAllSerials, workingPlatform]);
 
   const handleDeleteResource = useCallback((platformId: string, resourceId: string) => {
-    const update = (p: Platform) => p.id === platformId 
-      ? { ...p, contributors: p.contributors.filter(r => r.id !== resourceId) } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
-  }, []);
+    if (workingPlatform?.id === platformId) {
+      setWorkingPlatform(prev => prev ? { ...prev, contributors: prev.contributors.filter(r => r.id !== resourceId) } : null);
+    } else {
+      const update = (p: Platform) => p.id === platformId 
+        ? { ...p, contributors: p.contributors.filter(r => r.id !== resourceId) } : p;
+      setSavedActivePlatforms(prev => prev.map(update));
+      setArchivedPlatforms(prev => prev.map(update));
+    }
+  }, [workingPlatform]);
 
   const handleUpdateResource = useCallback((platformId: string, resourceId: string, updates: Partial<ApiResource>) => {
-    const update = (p: Platform) => p.id === platformId 
-      ? { ...p, contributors: p.contributors.map(r => r.id === resourceId ? { ...r, ...updates } : r) } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
-  }, []);
+    if (workingPlatform?.id === platformId) {
+      setWorkingPlatform(prev => prev ? { 
+        ...prev, 
+        contributors: prev.contributors.map(r => r.id === resourceId ? { ...r, ...updates } : r) 
+      } : null);
+    } else {
+      const update = (p: Platform) => p.id === platformId 
+        ? { ...p, contributors: p.contributors.map(r => r.id === resourceId ? { ...r, ...updates } : r) } : p;
+      setSavedActivePlatforms(prev => prev.map(update));
+      setArchivedPlatforms(prev => prev.map(update));
+    }
+  }, [workingPlatform]);
 
   // HANDSHAKE HANDLERS
   const handleAddHandshake = useCallback((platformId: string, resourceId: string) => {
@@ -385,7 +449,7 @@ const App: React.FC = () => {
     const newHandshake: Handshake = {
       id: 'hs-' + Date.now(),
       serial,
-      endpointName: 'New API Handshake',
+      endpointName: '',
       authentication: { type: '' },
       curlRequests: [],
       schemaModels: [],
@@ -393,49 +457,79 @@ const App: React.FC = () => {
       status: 'unconfigured',
       isExpanded: true,
     };
-    const update = (p: Platform) => p.id === platformId 
+    
+    const updatePlatform = (p: Platform) => p.id === platformId 
       ? { ...p, contributors: p.contributors.map(r => r.id === resourceId 
           ? { ...r, handshakes: [...r.handshakes, newHandshake] } : r) } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
-  }, [getAllSerials]);
+    
+    if (workingPlatform?.id === platformId) {
+      setWorkingPlatform(prev => prev ? updatePlatform(prev) : null);
+    } else {
+      setSavedActivePlatforms(prev => prev.map(updatePlatform));
+      setArchivedPlatforms(prev => prev.map(updatePlatform));
+    }
+  }, [getAllSerials, workingPlatform]);
 
   const handleUpdateHandshake = useCallback((pId: string, rId: string, hId: string, updates: Partial<Handshake>) => {
-    const update = (p: Platform) => p.id === pId 
+    const updatePlatform = (p: Platform) => p.id === pId 
       ? { ...p, contributors: p.contributors.map(r => r.id === rId 
           ? { ...r, handshakes: r.handshakes.map(h => h.id === hId ? { ...h, ...updates } : h) } : r) } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
-  }, []);
+    
+    if (workingPlatform?.id === pId) {
+      setWorkingPlatform(prev => prev ? updatePlatform(prev) : null);
+    } else {
+      setSavedActivePlatforms(prev => prev.map(updatePlatform));
+      setArchivedPlatforms(prev => prev.map(updatePlatform));
+    }
+  }, [workingPlatform]);
 
   const handleDeleteHandshake = useCallback((pId: string, rId: string, hId: string) => {
-    const update = (p: Platform) => p.id === pId 
+    const updatePlatform = (p: Platform) => p.id === pId 
       ? { ...p, contributors: p.contributors.map(r => r.id === rId 
           ? { ...r, handshakes: r.handshakes.filter(h => h.id !== hId) } : r) } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
-  }, []);
+    
+    if (workingPlatform?.id === pId) {
+      setWorkingPlatform(prev => prev ? updatePlatform(prev) : null);
+    } else {
+      setSavedActivePlatforms(prev => prev.map(updatePlatform));
+      setArchivedPlatforms(prev => prev.map(updatePlatform));
+    }
+  }, [workingPlatform]);
 
   // TOGGLE HANDLERS
   const toggle = (id: string) => {
-    const updateExp = (p: Platform) => p.id === id ? { ...p, isExpanded: !p.isExpanded } : p;
-    setPlatforms(prev => prev.map(updateExp));
-    setArchivedPlatforms(prev => prev.map(updateExp));
+    if (workingPlatform?.id === id) {
+      setWorkingPlatform(prev => prev ? { ...prev, isExpanded: !prev.isExpanded } : null);
+    } else {
+      const updateExp = (p: Platform) => p.id === id ? { ...p, isExpanded: !p.isExpanded } : p;
+      setSavedActivePlatforms(prev => prev.map(updateExp));
+      setArchivedPlatforms(prev => prev.map(updateExp));
+    }
   };
 
   const toggleResource = (pId: string, rId: string) => {
     const update = (p: Platform) => p.id === pId 
       ? { ...p, contributors: p.contributors.map(r => r.id === rId ? { ...r, isExpanded: !r.isExpanded } : r) } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
+    
+    if (workingPlatform?.id === pId) {
+      setWorkingPlatform(prev => prev ? update(prev) : null);
+    } else {
+      setSavedActivePlatforms(prev => prev.map(update));
+      setArchivedPlatforms(prev => prev.map(update));
+    }
   };
 
   const toggleHandshake = (pId: string, rId: string, hId: string) => {
     const update = (p: Platform) => p.id === pId 
       ? { ...p, contributors: p.contributors.map(r => r.id === rId 
           ? { ...r, handshakes: r.handshakes.map(h => h.id === hId ? { ...h, isExpanded: !h.isExpanded } : h) } : r) } : p;
-    setPlatforms(prev => prev.map(update));
-    setArchivedPlatforms(prev => prev.map(update));
+    
+    if (workingPlatform?.id === pId) {
+      setWorkingPlatform(prev => prev ? update(prev) : null);
+    } else {
+      setSavedActivePlatforms(prev => prev.map(update));
+      setArchivedPlatforms(prev => prev.map(update));
+    }
   };
 
   // ============================================
@@ -481,11 +575,18 @@ const App: React.FC = () => {
             <div className="platform-actions">
               <div className="platform-actions-left">
                 {!platform.isMaster && <button className="btn btn--confirm" onClick={() => handleUpdatePlatform(platform.id, { isMaster: true })}>✓ Confirm Master</button>}
+                {workingPlatform?.id !== platform.id && (
+                  <button className="btn btn--archive" onClick={() => handleArchiveFromActive(platform.id)}>📦 Archive</button>
+                )}
               </div>
               <div className="platform-actions-right">
                 <span className="save-status">Ready.</span>
-                <button className="btn btn--text-danger">Cancel</button>
-                <button className="btn btn--text-success">Submit</button>
+                <button className="btn btn--text-danger" onClick={() => handleDeletePlatform(platform.id)}>Cancel</button>
+                {workingPlatform?.id === platform.id ? (
+                  <button className="btn btn--save" onClick={handleSaveWorkingPlatform}>💾 Save Platform</button>
+                ) : (
+                  <button className="btn btn--text-success">Update</button>
+                )}
               </div>
             </div>
           </div>
@@ -624,38 +725,65 @@ const App: React.FC = () => {
           <h1>Family Platform Master API Key Manager</h1>
           <p className="app__subtitle">Configure AI providers for content generation • Supports ALL file types</p>
         </div>
-        <button className="btn btn--add" onClick={handleAddPlatform}>+ Add New Platform</button>
+        <button className="btn-plus" onClick={handleStartNewPlatform} title="New Platform">+</button>
       </header>
 
-      {/* ARCHIVED PLATFORMS DROPDOWN - GRANDFATHER EXACT */}
+      {/* ARCHIVED PLATFORMS DROPDOWN */}
       <div className={`header-subcontainer archive-panel ${archiveVisible ? 'is-visible' : ''}`}>
         <div className="archive-header">
-          <h2>Archived Master Platforms</h2>
-          <button className="btn btn--secondary" onClick={handleAddArchivedPlatform}>📦 Mint New Archived Master</button>
+          <h2>📦 Archived Master Platforms</h2>
+          <button className="btn btn--secondary" onClick={handleAddArchivedPlatform}>+ Mint New Archived Master</button>
         </div>
         <div className="archived-platforms-container">
           {archivedPlatforms.length === 0 ? (
             <p className="empty-text">No archived platforms.</p>
           ) : (
-            archivedPlatforms.map(p => renderPlatform(p))
+            archivedPlatforms.map(p => (
+              <div key={p.id} className="saved-platform-row">
+                {renderPlatform(p)}
+                <button className="btn btn--inject" onClick={() => handleInjectFromArchive(p.id)}>💉 Inject to Active</button>
+              </div>
+            ))
           )}
         </div>
       </div>
 
       <main className="app__main">
-        <h2 className="main-content-header">Active Family Platform Master API Key Managers</h2>
-        {platforms.length === 0 ? (
-          <div className="empty-state">
-            <p>No active platforms configured.</p>
-            <p>Click "+ Add New Platform" to begin.</p>
+        {/* SAVED ACTIVE PLATFORMS - CLICKABLE HEADER */}
+        <div className="saved-active-section">
+          <h2 className="saved-active-header" onClick={() => setSavedActiveVisible(!savedActiveVisible)}>
+            <span className="header-chevron">{savedActiveVisible ? '▼' : '▶'}</span>
+            Active Family Platform Master API Key Managers
+            <span className="saved-count">({savedActivePlatforms.length} saved)</span>
+          </h2>
+          
+          <div className={`saved-active-container ${savedActiveVisible ? 'is-visible' : ''}`}>
+            {savedActivePlatforms.length === 0 ? (
+              <p className="empty-text">No saved active platforms. Fill out the form below and save.</p>
+            ) : (
+              savedActivePlatforms.map(p => renderPlatform(p))
+            )}
           </div>
-        ) : (
-          platforms.map(p => renderPlatform(p))
-        )}
+        </div>
+
+        {/* WORKING FORM AREA */}
+        <div className="working-form-section">
+          <h3 className="working-form-header">
+            {workingPlatform ? '✏️ New Platform' : '🆕 Start a New Platform'}
+          </h3>
+          
+          {workingPlatform ? (
+            renderPlatform(workingPlatform)
+          ) : (
+            <div className="empty-state">
+              <p>Click the <span className="plus-hint">+</span> button above to start a new platform.</p>
+            </div>
+          )}
+        </div>
       </main>
 
       <footer className="app__footer">
-        <span>Active: {platforms.length} | Archived: {archivedPlatforms.length} | Resources: {platforms.reduce((s,p)=>s+p.contributors.length,0)} | Handshakes: {platforms.reduce((s,p)=>s+p.contributors.reduce((x,r)=>x+r.handshakes.length,0),0)}</span>
+        <span>Saved Active: {savedActivePlatforms.length} | Archived: {archivedPlatforms.length} | Working: {workingPlatform ? 1 : 0}</span>
       </footer>
     </div>
   );
