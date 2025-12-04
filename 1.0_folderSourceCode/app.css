@@ -194,10 +194,6 @@ body {
   font-weight: bold;
 }
 
-.saved-platform-row {
-  margin-bottom: 1rem;
-}
-
 .main-content-header {
   font-size: 1.125rem;
   color: var(--text-secondary);
@@ -571,44 +567,34 @@ details[open] {
   border: 1px solid var(--accent-green);
 }
 
-/* TRANSFER BUTTONS */
-.transfer-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-}
-
-.btn-transfer {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.8rem;
-  font-weight: 500;
+/* MINI TRANSFER BUTTONS (in accordion header) */
+.btn-transfer-mini {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   border: 1px solid;
+  white-space: nowrap;
 }
 
-.btn-transfer--teal {
-  background: rgba(45, 212, 191, 0.15);
+.btn-transfer-mini--teal {
+  background: rgba(45, 212, 191, 0.2);
   color: var(--accent-teal);
   border-color: var(--accent-teal);
 }
-.btn-transfer--teal:hover {
-  background: rgba(45, 212, 191, 0.3);
+.btn-transfer-mini--teal:hover {
+  background: rgba(45, 212, 191, 0.4);
 }
 
-.btn-transfer--amber {
-  background: rgba(245, 158, 11, 0.15);
+.btn-transfer-mini--amber {
+  background: rgba(245, 158, 11, 0.2);
   color: #f59e0b;
   border-color: #f59e0b;
 }
-.btn-transfer--amber:hover {
-  background: rgba(245, 158, 11, 0.3);
+.btn-transfer-mini--amber:hover {
+  background: rgba(245, 158, 11, 0.4);
 }
 
 .archive-count {
