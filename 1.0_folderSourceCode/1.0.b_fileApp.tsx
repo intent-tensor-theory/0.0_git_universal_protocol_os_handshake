@@ -2,25 +2,82 @@
 // PROTOCOL OS - MAIN APPLICATION COMPONENT
 // ============================================
 // Address: 1.0.b
-// Purpose: Root Application Component and Layout
+// Purpose: Root Application Component with Full Form Hierarchy
 // ============================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './app.css';
 import { logger, COMMENTARY } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
 
 // ============================================
-// TYPES
+// TYPES - Matching Grandfather Code Structure
 // ============================================
 
 type ViewMode = 'builder' | 'library' | 'split';
+type HandshakeStatus = 'unconfigured' | 'awaiting_auth' | 'healthy' | 'failed';
+
+interface Authentication {
+  type: string;
+  [key: string]: unknown;
+}
+
+interface Handshake {
+  id: string;
+  serial: string;
+  endpointName: string;
+  authentication: Authentication;
+  status: HandshakeStatus;
+  isExpanded?: boolean;
+}
+
+interface ApiResource {
+  id: string;
+  serial: string;
+  title: string;
+  url: string;
+  description: string;
+  doc_url: string;
+  notes: string;
+  handshakes: Handshake[];
+  isExpanded?: boolean;
+}
 
 interface Platform {
   id: string;
+  serial: string;
   name: string;
-  edition: 'free' | 'pro' | 'enterprise';
-  status: 'active' | 'inactive';
+  url: string;
+  description: string;
+  doc_url: string;
+  auth_notes: string;
+  contributors: ApiResource[];
+  isMaster: boolean;
   isExpanded?: boolean;
+}
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+const AUTH_TYPES = [
+  'Select an authentication type...',
+  'API Key / Basic Auth',
+  'OAuth 2.0 (Authorization Code)',
+  'OAuth 2.0 (PKCE)',
+  'OAuth 2.0 (Client Credentials)',
+  'GitHub Direct Execution',
+  'Web Scraper (No Auth - Keyless exchange)',
+];
+
+// ============================================
+// SERIAL GENERATOR
+// ============================================
+
+function generateSerial(prefix: string): string {
+  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const serial = `${prefix}-${randomPart}`;
+  console.log(`🔢 Generated serial: ${serial}`);
+  return serial;
 }
 
 // ============================================
@@ -28,379 +85,391 @@ interface Platform {
 // ============================================
 
 const App: React.FC = () => {
-  // ============================================
-  // STATE - Log every state initialization
-  // ============================================
-  
-  console.log('🔴 APP COMPONENT FUNCTION EXECUTING - This runs on every render');
-  
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    console.log('🟡 useState(viewMode) initializer running - setting to "builder"');
-    return 'builder';
-  });
-  
-  const [platforms, setPlatforms] = useState<Platform[]>(() => {
-    console.log('🟡 useState(platforms) initializer running - setting to empty array');
-    return [];
-  });
-  
-  const [systemStatus] = useState<'healthy' | 'loading' | 'error'>(() => {
-    console.log('🟡 useState(systemStatus) initializer running - setting to "healthy"');
-    return 'healthy';
-  });
+  console.log('═══════════════════════════════════════════════════════════');
+  console.log('🔴 APP COMPONENT RENDER START');
+  console.log('═══════════════════════════════════════════════════════════');
 
-  console.log('🔵 Current State:', { viewMode, platformCount: platforms.length, systemStatus });
+  const [viewMode, setViewMode] = useState<ViewMode>('builder');
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [systemStatus] = useState<'healthy' | 'loading' | 'error'>('healthy');
 
-  // ============================================
-  // INITIALIZATION
-  // ============================================
+  console.log('🔵 Current State:', { 
+    viewMode, 
+    platformCount: platforms.length,
+  });
 
   useEffect(() => {
-    console.log('🟢 useEffect MOUNT - App component mounted to DOM');
+    console.log('🟢 useEffect MOUNT');
     logger.success('App.Init', 'Protocol OS application mounted', {
       commentary: COMMENTARY.SYSTEM_INIT,
-      data: { viewMode, platformCount: platforms.length },
     });
-
-    return () => {
-      console.log('🔴 useEffect CLEANUP - App component unmounting');
-      logger.info('App.Unmount', 'Application unmounting', {
-        commentary: COMMENTARY.SYSTEM_SHUTDOWN,
-      });
-    };
+    return () => console.log('🔴 useEffect CLEANUP');
   }, []);
 
   // ============================================
-  // CLICK HANDLERS - Exhaustive Logging
+  // PLATFORM HANDLERS
   // ============================================
 
-  const handleAddPlatform = () => {
-    // FIRST THING: Log that click was received
+  const handleAddPlatform = useCallback(() => {
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('🖱️ CLICK DETECTED: handleAddPlatform() function called');
+    console.log('🖱️ handleAddPlatform() CALLED');
     console.log('═══════════════════════════════════════════════════════════');
     
-    logger.info('Click.Detected', 'Add Platform button was clicked', {
-      commentary: 'The onClick event fired and reached the handler function',
-      data: { timestamp: Date.now(), currentPlatformCount: platforms.length },
+    logger.info('Platform.Add.Start', 'Creating new platform', {
+      commentary: COMMENTARY.PLATFORM_CREATED,
     });
 
-    try {
-      console.log('📦 Creating new platform object...');
-      
-      const newPlatform: Platform = {
-        id: 'plat-' + Date.now().toString(),
-        name: 'New Platform',
-        edition: 'free',
-        status: 'active',
-        isExpanded: true,
-      };
-      
-      console.log('✅ Platform object created:', newPlatform);
-      logger.debug('Platform.ObjectCreated', 'New platform object instantiated', {
-        commentary: 'Platform object created in memory, not yet added to state',
-        data: newPlatform,
-      });
+    const newPlatform: Platform = {
+      id: 'plat-' + Date.now().toString(),
+      serial: generateSerial('PLAT'),
+      name: 'Untitled Platform',
+      url: '',
+      description: '',
+      doc_url: '',
+      auth_notes: '',
+      contributors: [],
+      isMaster: false,
+      isExpanded: true,
+    };
 
-      console.log('📤 Calling setPlatforms to update React state...');
-      
-      setPlatforms(prev => {
-        console.log('🔄 Inside setPlatforms callback');
-        console.log('   Previous platforms:', prev);
-        
-        const updated = [...prev, newPlatform];
-        
-        console.log('   New platforms array:', updated);
-        console.log('   New count:', updated.length);
-        
-        logger.success('Platform.StateUpdated', 'React state updated with new platform', {
-          commentary: COMMENTARY.PLATFORM_CREATED,
-          data: { 
-            platformId: newPlatform.id, 
-            previousCount: prev.length,
-            newCount: updated.length,
-          },
-        });
-        
-        return updated;
-      });
+    console.log('📦 New platform object:', newPlatform);
 
-      console.log('✅ setPlatforms call completed (state update is async)');
-      logger.success('Platform.Add', 'Add platform operation completed', {
-        commentary: 'The handler finished executing. React will re-render with new state.',
-      });
-      
-    } catch (error) {
-      console.error('❌ ERROR in handleAddPlatform:', error);
-      logger.error('Platform.Add.Error', 'Failed to add platform', {
-        commentary: 'An exception was thrown during platform creation',
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
-    }
-    
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('🏁 handleAddPlatform() function complete');
-    console.log('═══════════════════════════════════════════════════════════');
-  };
-
-  const handleDeletePlatform = (id: string) => {
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('🖱️ CLICK DETECTED: handleDeletePlatform() called with id:', id);
-    console.log('═══════════════════════════════════════════════════════════');
-    
-    logger.info('Click.Detected', 'Delete Platform button was clicked', {
-      commentary: 'Delete click received for platform',
-      data: { platformId: id },
+    setPlatforms(prev => {
+      console.log('🔄 setPlatforms callback - adding platform');
+      const updated = [...prev, newPlatform];
+      console.log('   New platform count:', updated.length);
+      return updated;
     });
+  }, []);
 
-    try {
-      const platformToDelete = platforms.find(p => p.id === id);
-      console.log('🔍 Found platform to delete:', platformToDelete);
-      
-      if (!platformToDelete) {
-        console.warn('⚠️ Platform not found with id:', id);
-        logger.warn('Platform.Delete.NotFound', `Platform not found: ${id}`, {
-          commentary: 'Attempted to delete a platform that does not exist in state',
-          data: { searchedId: id, availableIds: platforms.map(p => p.id) },
-        });
-        return;
+  const handleUpdatePlatform = useCallback((platformId: string, updates: Partial<Platform>) => {
+    console.log('🖱️ handleUpdatePlatform:', { platformId, updates });
+    setPlatforms(prev => prev.map(p => p.id === platformId ? { ...p, ...updates } : p));
+  }, []);
+
+  const handleDeletePlatform = useCallback((platformId: string) => {
+    console.log('🖱️ handleDeletePlatform:', platformId);
+    setPlatforms(prev => prev.filter(p => p.id !== platformId));
+  }, []);
+
+  const handleTogglePlatform = useCallback((platformId: string) => {
+    console.log('🖱️ handleTogglePlatform:', platformId);
+    setPlatforms(prev => prev.map(p => p.id === platformId ? { ...p, isExpanded: !p.isExpanded } : p));
+  }, []);
+
+  // ============================================
+  // RESOURCE HANDLERS
+  // ============================================
+
+  const handleAddResource = useCallback((platformId: string) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('🖱️ handleAddResource() for platform:', platformId);
+    console.log('═══════════════════════════════════════════════════════════');
+
+    const newResource: ApiResource = {
+      id: 'res-' + Date.now().toString(),
+      serial: generateSerial('RES'),
+      title: 'Untitled API Resource',
+      url: '',
+      description: '',
+      doc_url: '',
+      notes: '',
+      handshakes: [],
+      isExpanded: true,
+    };
+
+    console.log('📦 New resource:', newResource);
+
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        console.log('🔄 Adding resource to platform:', p.name);
+        return { ...p, contributors: [...p.contributors, newResource] };
       }
+      return p;
+    }));
+  }, []);
 
-      console.log('📤 Calling setPlatforms to remove platform...');
-      
-      setPlatforms(prev => {
-        console.log('🔄 Inside setPlatforms callback for delete');
-        const updated = prev.filter(p => p.id !== id);
-        console.log('   Filtered platforms:', updated);
-        
-        logger.success('Platform.Delete', `Platform deleted`, {
-          commentary: COMMENTARY.PLATFORM_DELETED,
-          data: { deletedId: id, remainingCount: updated.length },
-        });
-        
-        return updated;
-      });
-      
-    } catch (error) {
-      console.error('❌ ERROR in handleDeletePlatform:', error);
-      logger.error('Platform.Delete.Error', 'Failed to delete platform', {
-        commentary: 'An exception was thrown during platform deletion',
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
-    }
-  };
+  const handleUpdateResource = useCallback((platformId: string, resourceId: string, updates: Partial<ApiResource>) => {
+    console.log('🖱️ handleUpdateResource:', { resourceId, updates });
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        return { ...p, contributors: p.contributors.map(r => r.id === resourceId ? { ...r, ...updates } : r) };
+      }
+      return p;
+    }));
+  }, []);
 
-  const handleViewModeChange = (newMode: ViewMode) => {
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('🖱️ CLICK DETECTED: handleViewModeChange() called');
-    console.log('   Current mode:', viewMode);
-    console.log('   New mode:', newMode);
-    console.log('═══════════════════════════════════════════════════════════');
-    
-    logger.info('Click.Detected', 'View mode button clicked', {
-      commentary: 'View mode toggle clicked',
-      data: { from: viewMode, to: newMode },
-    });
+  const handleDeleteResource = useCallback((platformId: string, resourceId: string) => {
+    console.log('🖱️ handleDeleteResource:', { platformId, resourceId });
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        return { ...p, contributors: p.contributors.filter(r => r.id !== resourceId) };
+      }
+      return p;
+    }));
+  }, []);
 
-    try {
-      setViewMode(newMode);
-      console.log('✅ setViewMode called with:', newMode);
-      
-      logger.success('View.Changed', `View mode changed to ${newMode}`, {
-        commentary: 'View modes control the layout: Builder for editing, Library for browsing saved handshakes, Split for both',
-      });
-      
-    } catch (error) {
-      console.error('❌ ERROR in handleViewModeChange:', error);
-      logger.error('View.Change.Error', 'Failed to change view mode', {
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
-    }
-  };
-
-  const handleAddResource = (platformId: string) => {
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('🖱️ CLICK DETECTED: handleAddResource() called');
-    console.log('   Platform ID:', platformId);
-    console.log('═══════════════════════════════════════════════════════════');
-    
-    logger.info('Click.Detected', 'Add Resource button clicked', {
-      commentary: 'Resource addition requested for platform',
-      data: { platformId },
-    });
-    
-    // TODO: Implement resource addition
-    console.log('⚠️ handleAddResource not yet implemented');
-    logger.warn('Resource.Add.NotImplemented', 'Resource addition not yet implemented', {
-      commentary: 'This feature is part of the next development phase',
-    });
-  };
+  const handleToggleResource = useCallback((platformId: string, resourceId: string) => {
+    console.log('🖱️ handleToggleResource:', { platformId, resourceId });
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        return { ...p, contributors: p.contributors.map(r => r.id === resourceId ? { ...r, isExpanded: !r.isExpanded } : r) };
+      }
+      return p;
+    }));
+  }, []);
 
   // ============================================
-  // RENDER - Log render cycle
+  // HANDSHAKE HANDLERS
   // ============================================
-  
-  console.log('🎨 RENDER: Building JSX with current state');
-  console.log('   Platforms to render:', platforms.length);
+
+  const handleAddHandshake = useCallback((platformId: string, resourceId: string) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('🖱️ handleAddHandshake()');
+    console.log('   Platform:', platformId, 'Resource:', resourceId);
+    console.log('═══════════════════════════════════════════════════════════');
+
+    const newHandshake: Handshake = {
+      id: 'hs-' + Date.now().toString(),
+      serial: generateSerial('HS'),
+      endpointName: 'New API Handshake',
+      authentication: { type: 'Select an authentication type...' },
+      status: 'unconfigured',
+      isExpanded: true,
+    };
+
+    console.log('📦 New handshake:', newHandshake);
+
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        return {
+          ...p,
+          contributors: p.contributors.map(r => {
+            if (r.id === resourceId) {
+              console.log('🔄 Adding handshake to resource:', r.title);
+              return { ...r, handshakes: [...r.handshakes, newHandshake] };
+            }
+            return r;
+          }),
+        };
+      }
+      return p;
+    }));
+  }, []);
+
+  const handleUpdateHandshake = useCallback((platformId: string, resourceId: string, handshakeId: string, updates: Partial<Handshake>) => {
+    console.log('🖱️ handleUpdateHandshake:', { handshakeId, updates });
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        return {
+          ...p,
+          contributors: p.contributors.map(r => {
+            if (r.id === resourceId) {
+              return { ...r, handshakes: r.handshakes.map(h => h.id === handshakeId ? { ...h, ...updates } : h) };
+            }
+            return r;
+          }),
+        };
+      }
+      return p;
+    }));
+  }, []);
+
+  const handleDeleteHandshake = useCallback((platformId: string, resourceId: string, handshakeId: string) => {
+    console.log('🖱️ handleDeleteHandshake:', { handshakeId });
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        return {
+          ...p,
+          contributors: p.contributors.map(r => {
+            if (r.id === resourceId) {
+              return { ...r, handshakes: r.handshakes.filter(h => h.id !== handshakeId) };
+            }
+            return r;
+          }),
+        };
+      }
+      return p;
+    }));
+  }, []);
+
+  const handleToggleHandshake = useCallback((platformId: string, resourceId: string, handshakeId: string) => {
+    console.log('🖱️ handleToggleHandshake:', { handshakeId });
+    setPlatforms(prev => prev.map(p => {
+      if (p.id === platformId) {
+        return {
+          ...p,
+          contributors: p.contributors.map(r => {
+            if (r.id === resourceId) {
+              return { ...r, handshakes: r.handshakes.map(h => h.id === handshakeId ? { ...h, isExpanded: !h.isExpanded } : h) };
+            }
+            return r;
+          }),
+        };
+      }
+      return p;
+    }));
+  }, []);
+
+  // ============================================
+  // RENDER
+  // ============================================
+
+  console.log('🎨 RENDER: Building JSX with', platforms.length, 'platforms');
 
   return (
     <div className="app">
-      {/* Header */}
       <header className="app__header">
         <div className="app__header-left">
-          <h1 className="app__title">
-            <span className="app__title-icon">🤝</span>
-            Protocol OS
-          </h1>
+          <h1 className="app__title">🤝 Protocol OS</h1>
           <span className="app__badge">v1.0.0</span>
         </div>
-        
         <div className="app__header-center">
           <div className="app__view-toggle">
-            <button
-              className={'app__view-btn' + (viewMode === 'builder' ? ' app__view-btn--active' : '')}
-              onClick={() => {
-                console.log('🖱️ RAW CLICK: Builder button onClick fired');
-                handleViewModeChange('builder');
-              }}
-            >
-              🔧 Builder
-            </button>
-            <button
-              className={'app__view-btn' + (viewMode === 'library' ? ' app__view-btn--active' : '')}
-              onClick={() => {
-                console.log('🖱️ RAW CLICK: Library button onClick fired');
-                handleViewModeChange('library');
-              }}
-            >
-              📚 Library
-            </button>
-            <button
-              className={'app__view-btn' + (viewMode === 'split' ? ' app__view-btn--active' : '')}
-              onClick={() => {
-                console.log('🖱️ RAW CLICK: Split button onClick fired');
-                handleViewModeChange('split');
-              }}
-            >
-              ⊞ Split
-            </button>
+            {(['builder', 'library', 'split'] as ViewMode[]).map(mode => (
+              <button key={mode} className={'app__view-btn' + (viewMode === mode ? ' app__view-btn--active' : '')}
+                onClick={() => { console.log('🖱️ View:', mode); setViewMode(mode); }}>
+                {mode === 'builder' ? '🔧 Builder' : mode === 'library' ? '📚 Library' : '⊞ Split'}
+              </button>
+            ))}
           </div>
         </div>
-        
         <div className="app__header-right">
           <div className={'app__status app__status--' + systemStatus}>
             <span className="app__status-dot"></span>
-            <span className="app__status-text">System {systemStatus}</span>
+            <span>System {systemStatus}</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="app__main">
         <section className="app__panel">
           <div className="app__panel-header">
-            <h2 className="app__panel-title">
-              <span className="app__panel-title-icon">Δ</span>
-              Platform → Resource → Handshake
-            </h2>
-            <button 
-              className="app__add-btn" 
-              onClick={() => {
-                console.log('🖱️ RAW CLICK: Add Platform button onClick fired');
-                handleAddPlatform();
-              }}
-            >
-              + Add Platform
-            </button>
+            <h2 className="app__panel-title"><span className="app__panel-title-icon">Δ</span> Platform → Resource → Handshake</h2>
+            <button className="app__add-btn" onClick={() => { console.log('🖱️ RAW: +Platform'); handleAddPlatform(); }}>+ Add Platform</button>
           </div>
           
           <div className="app__tree">
-            {platforms.length > 0 ? (
-              <>
-                {console.log('🎨 RENDER: Rendering', platforms.length, 'platform cards')}
-                {platforms.map((platform, index) => {
-                  console.log(`🎨 RENDER: Rendering platform card ${index}:`, platform.id);
-                  return (
-                    <div key={platform.id} className="platform-card">
-                      <div className="platform-card__header">
-                        <span className="platform-card__icon">🌐</span>
-                        <span className="platform-card__name">{platform.name}</span>
-                        <span className={'platform-card__badge platform-card__badge--' + platform.edition}>
-                          {platform.edition}
-                        </span>
-                        <button 
-                          className="platform-card__delete-btn"
-                          onClick={() => {
-                            console.log('🖱️ RAW CLICK: Delete button onClick fired for:', platform.id);
-                            handleDeletePlatform(platform.id);
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <div className="platform-card__body">
-                        <p>Add resources and handshakes to this platform</p>
-                        <button 
-                          className="platform-card__btn"
-                          onClick={() => {
-                            console.log('🖱️ RAW CLICK: Add Resource button onClick fired for:', platform.id);
-                            handleAddResource(platform.id);
-                          }}
-                        >
-                          + Add Resource
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
-            ) : (
-              <>
-                {console.log('🎨 RENDER: Rendering empty state (no platforms)')}
-                <div className="app__empty">
-                  <div className="app__empty-icon">🚀</div>
-                  <div className="app__empty-title">Welcome to Protocol OS</div>
-                  <div className="app__empty-message">
-                    Universal API Handshake System with Intent Tensor Theory Architecture
-                  </div>
-                  <div className="app__empty-features">
-                    <div className="feature">✅ 11 Protocol Handlers</div>
-                    <div className="feature">✅ 5 Database Providers</div>
-                    <div className="feature">✅ State Management with Undo/Redo</div>
-                    <div className="feature">✅ Versioned Handshake Library</div>
-                    <div className="feature">✅ ITT-based Δ₁→Δ₆ Execution Flow</div>
-                  </div>
-                  <button 
-                    className="app__empty-btn" 
-                    onClick={() => {
-                      console.log('🖱️ RAW CLICK: Create First Platform button onClick fired');
-                      handleAddPlatform();
-                    }}
-                  >
-                    Create Your First Platform
-                  </button>
+            {platforms.length > 0 ? platforms.map(platform => (
+              <div key={platform.id} className="platform-card">
+                <div className="platform-card__header" onClick={() => { console.log('🖱️ Toggle platform'); handleTogglePlatform(platform.id); }}>
+                  <span className="platform-card__icon">{platform.isMaster ? '🛡️' : '❓'}</span>
+                  <span className="platform-card__name">{platform.name}</span>
+                  <span className={'platform-card__badge platform-card__badge--' + (platform.isMaster ? 'master' : 'unconfirmed')}>{platform.isMaster ? 'MASTER' : 'UNCONFIRMED'}</span>
+                  <span className="platform-card__serial">{platform.serial}</span>
+                  <button className="platform-card__delete-btn" onClick={(e) => { e.stopPropagation(); console.log('🖱️ Delete platform'); handleDeletePlatform(platform.id); }}>✕</button>
                 </div>
-              </>
+                
+                {platform.isExpanded && (
+                  <div className="platform-card__body">
+                    <div className="form-group"><label>Platform Name</label><input type="text" value={platform.name} placeholder="e.g., Google Cloud" onChange={(e) => { console.log('📝 name:', e.target.value); handleUpdatePlatform(platform.id, { name: e.target.value }); }} /></div>
+                    <div className="form-group"><label>Platform URL</label><input type="text" value={platform.url} placeholder="https://api.example.com" onChange={(e) => handleUpdatePlatform(platform.id, { url: e.target.value })} /></div>
+                    <div className="form-group"><label>Description</label><textarea value={platform.description} placeholder="Describe this platform..." rows={2} onChange={(e) => handleUpdatePlatform(platform.id, { description: e.target.value })} /></div>
+                    <div className="form-group"><label>Documentation URL</label><input type="text" value={platform.doc_url} placeholder="https://developer.example.com" onChange={(e) => handleUpdatePlatform(platform.id, { doc_url: e.target.value })} /></div>
+                    <div className="form-group"><label>Auth Notes</label><textarea value={platform.auth_notes} placeholder="Authentication notes..." rows={2} onChange={(e) => handleUpdatePlatform(platform.id, { auth_notes: e.target.value })} /></div>
+                    
+                    <hr className="divider" />
+                    
+                    <div className="section-header"><h4>📦 API Resources</h4><button className="btn btn--add-small" onClick={() => { console.log('🖱️ +Resource'); handleAddResource(platform.id); }}>+ Add Resource</button></div>
+                    
+                    {platform.contributors.length > 0 ? platform.contributors.map(resource => (
+                      <div key={resource.id} className="resource-card">
+                        <div className="resource-card__header" onClick={() => { console.log('🖱️ Toggle resource'); handleToggleResource(platform.id, resource.id); }}>
+                          <span className="resource-card__icon">📦</span>
+                          <span className="resource-card__name">{resource.title}</span>
+                          <span className="resource-card__serial">{resource.serial}</span>
+                          <button className="resource-card__delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteResource(platform.id, resource.id); }}>✕</button>
+                        </div>
+                        
+                        {resource.isExpanded && (
+                          <div className="resource-card__body">
+                            <div className="form-group"><label>Resource Title</label><input type="text" value={resource.title} placeholder="e.g., Get User" onChange={(e) => handleUpdateResource(platform.id, resource.id, { title: e.target.value })} /></div>
+                            <div className="form-group"><label>API URL</label><input type="text" value={resource.url} placeholder="https://api.example.com/users" onChange={(e) => handleUpdateResource(platform.id, resource.id, { url: e.target.value })} /></div>
+                            <div className="form-group"><label>Description</label><textarea value={resource.description} placeholder="Describe this resource..." rows={2} onChange={(e) => handleUpdateResource(platform.id, resource.id, { description: e.target.value })} /></div>
+                            <div className="form-group"><label>Doc URL</label><input type="text" value={resource.doc_url} onChange={(e) => handleUpdateResource(platform.id, resource.id, { doc_url: e.target.value })} /></div>
+                            <div className="form-group"><label>Notes</label><textarea value={resource.notes} rows={2} onChange={(e) => handleUpdateResource(platform.id, resource.id, { notes: e.target.value })} /></div>
+                            
+                            <hr className="divider" />
+                            
+                            <div className="section-header"><h4>🤝 Handshakes</h4><button className="btn btn--add-small" onClick={() => { console.log('🖱️ +Handshake'); handleAddHandshake(platform.id, resource.id); }}>+ Add Handshake</button></div>
+                            
+                            {resource.handshakes.length > 0 ? resource.handshakes.map(handshake => (
+                              <div key={handshake.id} className="handshake-card">
+                                <div className="handshake-card__header" onClick={() => { console.log('🖱️ Toggle handshake'); handleToggleHandshake(platform.id, resource.id, handshake.id); }}>
+                                  <span className="handshake-card__icon">🤝</span>
+                                  <span className="handshake-card__name">{handshake.endpointName}</span>
+                                  <span className={'handshake-card__status handshake-card__status--' + handshake.status}>{handshake.status}</span>
+                                  <span className="handshake-card__serial">{handshake.serial}</span>
+                                  <button className="handshake-card__delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteHandshake(platform.id, resource.id, handshake.id); }}>✕</button>
+                                </div>
+                                
+                                {handshake.isExpanded && (
+                                  <div className="handshake-card__body">
+                                    <div className="form-group"><label>Endpoint Name</label><input type="text" value={handshake.endpointName} onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { endpointName: e.target.value })} /></div>
+                                    <div className="form-group">
+                                      <label>Authentication Type</label>
+                                      <select value={handshake.authentication.type} onChange={(e) => { console.log('📝 auth:', e.target.value); handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { type: e.target.value }, status: e.target.value === AUTH_TYPES[0] ? 'unconfigured' : 'awaiting_auth' }); }}>
+                                        {AUTH_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                      </select>
+                                    </div>
+                                    
+                                    {handshake.authentication.type === 'API Key / Basic Auth' && (
+                                      <div className="auth-fields">
+                                        <div className="form-group"><label>API Key</label><input type="password" placeholder="Your API key" onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { ...handshake.authentication, apiKey: e.target.value } })} /></div>
+                                        <div className="form-group"><label>Header Name</label><input type="text" defaultValue="Authorization" onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { ...handshake.authentication, headerName: e.target.value } })} /></div>
+                                      </div>
+                                    )}
+                                    
+                                    {handshake.authentication.type === 'OAuth 2.0 (PKCE)' && (
+                                      <div className="auth-fields">
+                                        <div className="form-group"><label>Auth URL</label><input type="text" placeholder="https://provider.com/oauth/authorize" onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { ...handshake.authentication, authUrl: e.target.value } })} /></div>
+                                        <div className="form-group"><label>Token URL</label><input type="text" placeholder="https://provider.com/oauth/token" onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { ...handshake.authentication, tokenUrl: e.target.value } })} /></div>
+                                        <div className="form-group"><label>Client ID</label><input type="text" onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { ...handshake.authentication, clientId: e.target.value } })} /></div>
+                                        <div className="form-group"><label>Redirect URI</label><input type="text" onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { ...handshake.authentication, redirectUri: e.target.value } })} /></div>
+                                        <div className="form-group"><label>Scopes</label><input type="text" placeholder="openid profile email" onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { authentication: { ...handshake.authentication, scopes: e.target.value } })} /></div>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="handshake-card__actions">
+                                      <button className="btn btn--execute" onClick={() => { console.log('🖱️ Execute'); alert('Execute coming soon!'); }}>🚀 Execute</button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )) : <div className="empty-state--small"><p>No handshakes. Add one to configure authentication.</p></div>}
+                          </div>
+                        )}
+                      </div>
+                    )) : <div className="empty-state--small"><p>No resources. Add one to configure API endpoints.</p></div>}
+                    
+                    <div className="platform-card__actions">
+                      {!platform.isMaster && <button className="btn btn--confirm" onClick={() => { console.log('🖱️ Confirm Master'); handleUpdatePlatform(platform.id, { isMaster: true }); }}>✓ Confirm Master</button>}
+                      <button className="btn btn--save" onClick={() => { console.log('🖱️ Save'); alert('LocalStorage save coming soon!'); }}>💾 Save</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )) : (
+              <div className="app__empty">
+                <div className="app__empty-icon">🚀</div>
+                <div className="app__empty-title">Welcome to Protocol OS</div>
+                <div className="app__empty-message">Universal API Handshake System</div>
+                <div className="app__empty-features">
+                  <div className="feature">✅ Platform → Resource → Handshake</div>
+                  <div className="feature">✅ 6 Auth Types</div>
+                  <div className="feature">✅ Serial Tracking</div>
+                </div>
+                <button className="app__empty-btn" onClick={() => { console.log('🖱️ Create First'); handleAddPlatform(); }}>Create Your First Platform</button>
+              </div>
             )}
           </div>
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="app__footer">
-        <div className="app__footer-left">
-          <span className="app__footer-status">✓ Ready</span>
-        </div>
-        <div className="app__footer-center">
-          <span className="app__footer-stats">
-            {platforms.length} platforms · 251 source files · 26 build phases
-          </span>
-        </div>
-        <div className="app__footer-right">
-          <span className="app__footer-brand">
-            Intent Tensor Theory Architecture
-          </span>
-        </div>
+        <span className="app__footer-status">✓ Ready</span>
+        <span>{platforms.length} plat · {platforms.reduce((s,p)=>s+p.contributors.length,0)} res · {platforms.reduce((s,p)=>s+p.contributors.reduce((x,r)=>x+r.handshakes.length,0),0)} hs</span>
+        <span className="app__footer-brand">ITT Architecture</span>
       </footer>
     </div>
   );
