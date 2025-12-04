@@ -607,7 +607,7 @@ const App: React.FC = () => {
                         <path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H7V5h8v4z"/>
                       </svg>
                     </button>
-                    <button className="btn-icon btn-icon--blue" onClick={handleSaveToArchive} title="Save to Archive">
+                    <button className="btn-icon btn-icon--amber" onClick={handleSaveToArchive} title="Save to Archive">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H7V5h8v4z"/>
                       </svg>
@@ -759,7 +759,7 @@ const App: React.FC = () => {
       <div className={`header-subcontainer archive-panel ${archiveVisible ? 'is-visible' : ''}`}>
         <div className="archive-header">
           <h2>📦 Archived Master Platforms</h2>
-          <button className="btn btn--secondary" onClick={handleAddArchivedPlatform}>+ Mint New Archived Master</button>
+          <button className="btn-plus btn-plus--amber" onClick={handleAddArchivedPlatform} title="Mint New Archived Master">+</button>
         </div>
         <div className="archived-platforms-container">
           {archivedPlatforms.length === 0 ? (
