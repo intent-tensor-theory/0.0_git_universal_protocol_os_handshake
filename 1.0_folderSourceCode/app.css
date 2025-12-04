@@ -650,3 +650,39 @@ details[open] {
 .platform-actions-right {
   gap: 0.5rem;
 }
+
+/* ============================================
+   CLICKABLE SECTION HEADERS WITH HELP ICON
+   ============================================ */
+.handshake-step-header--clickable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+
+.handshake-step-header--clickable:hover {
+  color: var(--accent-teal);
+}
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: rgba(45, 212, 191, 0.2);
+  color: var(--accent-teal);
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: auto;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.handshake-step-header--clickable:hover .help-icon {
+  opacity: 1;
+  background: rgba(45, 212, 191, 0.4);
+}

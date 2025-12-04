@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './app.css';
 import { logger, COMMENTARY } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
+import { ReadmeHelpModal } from './1.7_folderSharedUserInterfaceComponents/1.7.8_folderReadmeHelpModal/1.7.8.a_fileReadmeHelpModalComponent';
 
 // ============================================
 // TYPES - GRANDFATHER EXACT
@@ -287,6 +288,10 @@ const App: React.FC = () => {
   // Dropdown visibility
   const [archiveVisible, setArchiveVisible] = useState(false);
   const [savedActiveVisible, setSavedActiveVisible] = useState(false);
+  
+  // README Help Modal state
+  const [helpModalSection, setHelpModalSection] = useState<1 | 2 | 3 | 4 | null>(null);
+  const [helpModalAuthType, setHelpModalAuthType] = useState<string>('');
 
   // Collect all serials for uniqueness check
   const getAllSerials = useCallback((): string[] => {
@@ -683,7 +688,13 @@ const App: React.FC = () => {
         {handshake.isExpanded && (
           <div className="accordion-content">
             {/* SECTION 1: Protocol Channel */}
-            <h4 className="handshake-step-header"><span className="step-number">1</span> Protocol Channel</h4>
+            <h4 
+              className="handshake-step-header handshake-step-header--clickable" 
+              onClick={() => setHelpModalSection(1)}
+              title="Click for help"
+            >
+              <span className="step-number">1</span> Protocol Channel <span className="help-icon">?</span>
+            </h4>
             <div className="form-group">
               <label><span className="input-label">1.a</span> Integration Name <span className="label-badge">Optional</span></label>
               <input type="text" value={handshake.endpointName} placeholder="My API Integration"
@@ -701,11 +712,26 @@ const App: React.FC = () => {
             </div>
 
             {/* SECTION 2: Channel Configuration */}
-            <h4 className="handshake-step-header"><span className="step-number">2</span> Channel Configuration</h4>
+            <h4 
+              className="handshake-step-header handshake-step-header--clickable" 
+              onClick={() => {
+                setHelpModalAuthType(handshake.authentication.type as string);
+                setHelpModalSection(2);
+              }}
+              title="Click for help"
+            >
+              <span className="step-number">2</span> Channel Configuration <span className="help-icon">?</span>
+            </h4>
             <CredentialsForm authType={handshake.authentication.type as string} />
 
             {/* SECTION 3: Request Input */}
-            <h4 className="handshake-step-header"><span className="step-number">3</span> Request Input</h4>
+            <h4 
+              className="handshake-step-header handshake-step-header--clickable" 
+              onClick={() => setHelpModalSection(3)}
+              title="Click for help"
+            >
+              <span className="step-number">3</span> Request Input <span className="help-icon">?</span>
+            </h4>
             <div className="form-group">
               <label><span className="input-label">3.a</span> Input Model (cURL, Schema, JSON, XML) <span className="label-badge">Primary</span></label>
               <textarea rows={6} placeholder="curl https://api.github.com/users/octocat" />
@@ -726,7 +752,13 @@ const App: React.FC = () => {
             </div>
 
             {/* SECTION 4: Execute */}
-            <h4 className="handshake-step-header"><span className="step-number">4</span> Execution & Output</h4>
+            <h4 
+              className="handshake-step-header handshake-step-header--clickable" 
+              onClick={() => setHelpModalSection(4)}
+              title="Click for help"
+            >
+              <span className="step-number">4</span> Execution & Output <span className="help-icon">?</span>
+            </h4>
             <div className="form-group">
               <label><span className="input-label">4.a</span> Execute</label>
               <button className="btn btn--execute">🚀 EXECUTE REQUEST</button>
@@ -802,6 +834,14 @@ const App: React.FC = () => {
       <footer className="app__footer">
         <span>Saved Active: {savedActivePlatforms.length} | Archived: {archivedPlatforms.length} | Working: {workingPlatform ? 1 : 0}</span>
       </footer>
+
+      {/* README Help Modal - fetches documentation from respective departments */}
+      <ReadmeHelpModal
+        isOpen={helpModalSection !== null}
+        onClose={() => setHelpModalSection(null)}
+        section={helpModalSection || 1}
+        authType={helpModalAuthType}
+      />
     </div>
   );
 };
