@@ -705,3 +705,23 @@ details[open] {
   background: rgba(45, 212, 191, 0.5);
   transform: scale(1.1);
 }
+
+/* ============================================
+   DATABASE STATUS INDICATOR
+   ============================================ */
+.db-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-left: auto;
+}
+
+.db-status--connected {
+  color: var(--accent-green);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.db-status--disconnected {
+  color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.1);
+}
