@@ -333,8 +333,16 @@ const App: React.FC = () => {
   // SAVE WORKING PLATFORM TO SAVED ACTIVE
   const handleSaveWorkingPlatform = useCallback(() => {
     if (!workingPlatform) return;
-    console.log('💾 Save Platform:', workingPlatform.serial);
-    setSavedActivePlatforms(prev => [...prev, workingPlatform]);
+    console.log('💾 Save to Active:', workingPlatform.serial);
+    setSavedActivePlatforms(prev => [...prev, { ...workingPlatform, isMaster: true }]);
+    setWorkingPlatform(null); // Clear form for next
+  }, [workingPlatform]);
+
+  // SAVE WORKING PLATFORM DIRECTLY TO ARCHIVE
+  const handleSaveToArchive = useCallback(() => {
+    if (!workingPlatform) return;
+    console.log('💾 Save to Archive:', workingPlatform.serial);
+    setArchivedPlatforms(prev => [...prev, { ...workingPlatform, isMaster: true }]);
     setWorkingPlatform(null); // Clear form for next
   }, [workingPlatform]);
 
@@ -574,18 +582,14 @@ const App: React.FC = () => {
 
             <div className="platform-actions">
               <div className="platform-actions-left">
-                {!platform.isMaster && <button className="btn btn--confirm" onClick={() => handleUpdatePlatform(platform.id, { isMaster: true })}>✓ Confirm Master</button>}
-                {workingPlatform?.id !== platform.id && (
-                  <button className="btn btn--archive" onClick={() => handleArchiveFromActive(platform.id)}>📦 Archive</button>
-                )}
+                <button className="btn-remove" onClick={() => handleDeletePlatform(platform.id)} title="Delete">🗑️</button>
               </div>
               <div className="platform-actions-right">
-                <span className="save-status">Ready.</span>
-                <button className="btn btn--text-danger" onClick={() => handleDeletePlatform(platform.id)}>Cancel</button>
-                {workingPlatform?.id === platform.id ? (
-                  <button className="btn btn--save" onClick={handleSaveWorkingPlatform}>💾 Save Platform</button>
-                ) : (
-                  <button className="btn btn--text-success">Update</button>
+                {workingPlatform?.id === platform.id && (
+                  <>
+                    <button className="btn-disk btn-disk--green" onClick={handleSaveWorkingPlatform} title="Save to Active">💾</button>
+                    <button className="btn-disk btn-disk--blue" onClick={() => { handleSaveToArchive(); }} title="Save to Archive">💾</button>
+                  </>
                 )}
               </div>
             </div>

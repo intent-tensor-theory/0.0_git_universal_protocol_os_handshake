@@ -500,6 +500,32 @@ details[open] {
   box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--highlight-light);
 }
 
+/* DISK SAVE BUTTONS */
+.btn-disk {
+  background: transparent;
+  border: none;
+  font-size: 1.75rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: transform 0.2s, filter 0.2s;
+  line-height: 1;
+}
+.btn-disk:hover {
+  transform: scale(1.15);
+}
+.btn-disk--green {
+  filter: hue-rotate(90deg) saturate(2) brightness(1.2);
+}
+.btn-disk--green:hover {
+  filter: hue-rotate(90deg) saturate(2) brightness(1.5);
+}
+.btn-disk--blue {
+  filter: hue-rotate(180deg) saturate(1.5) brightness(1.2);
+}
+.btn-disk--blue:hover {
+  filter: hue-rotate(180deg) saturate(1.5) brightness(1.5);
+}
+
 .btn--add { background: var(--accent-green); color: white; }
 .btn--add:hover { filter: brightness(1.2); }
 
@@ -525,12 +551,15 @@ details[open] {
   transform: scale(1.2);
 }
 
-.btn--save {
-  background: var(--accent-green);
-  color: white;
+.btn--add-small {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
 }
 
-.btn--archive {
+.btn--secondary {
   background: rgba(59, 130, 246, 0.2);
   color: var(--accent-blue);
   border: 1px solid var(--accent-blue);
@@ -557,25 +586,12 @@ details[open] {
   border: 1px solid var(--accent-blue);
 }
 
-.btn--confirm { background: var(--accent-blue); color: white; }
 .btn--execute { 
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal)); 
   color: white;
   width: 100%;
   padding: 1rem;
   font-size: 1.125rem;
-}
-
-.btn--text-danger {
-  background: transparent;
-  color: var(--accent-red);
-  box-shadow: none;
-}
-
-.btn--text-success {
-  background: transparent;
-  color: var(--accent-green);
-  box-shadow: none;
 }
 
 .btn-remove {
@@ -607,7 +623,6 @@ details[open] {
   gap: 1rem;
 }
 
-.save-status {
-  color: var(--text-muted);
-  font-size: 0.875rem;
+.platform-actions-right {
+  gap: 0.5rem;
 }
