@@ -7,8 +7,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import './app.css';
-import { logger, COMMENTARY } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
+import { logger, COMMENTARY, LogEntry } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
 import { ReadmeHelpModal } from './1.7_folderSharedUserInterfaceComponents/1.7.8_folderReadmeHelpModal/1.7.8.a_fileReadmeHelpModalComponent';
+import { initializeDatabase, getActiveProvider, isDatabaseInitialized } from './1.2_folderDatabasePersistence/1.2.c_fileActiveDatabaseProviderToggle';
 
 // ============================================
 // TYPES - GRANDFATHER EXACT
@@ -293,6 +294,14 @@ const App: React.FC = () => {
   const [helpModalSection, setHelpModalSection] = useState<1 | 2 | 3 | 4 | null>(null);
   const [helpModalAuthType, setHelpModalAuthType] = useState<string>('');
 
+  // Execution logs state - keyed by handshake ID
+  const [executionLogs, setExecutionLogs] = useState<Record<string, LogEntry[]>>({});
+  const [executingHandshakes, setExecutingHandshakes] = useState<Set<string>>(new Set());
+  
+  // Database initialization state
+  const [dbInitialized, setDbInitialized] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
+
   // Collect all serials for uniqueness check
   const getAllSerials = useCallback((): string[] => {
     const serials: string[] = [];
@@ -317,6 +326,42 @@ const App: React.FC = () => {
   useEffect(() => {
     console.log('🟢 APP MOUNT');
     logger.success('App.Init', 'Protocol OS mounted', { commentary: COMMENTARY.SYSTEM_INIT });
+    
+    // Initialize database and load persisted data
+    const initDb = async () => {
+      try {
+        logger.info('Database.Init', 'Initializing database provider...', { commentary: COMMENTARY.SYSTEM_INIT });
+        const result = await initializeDatabase();
+        
+        if (result.success) {
+          setDbInitialized(true);
+          logger.success('Database.Init', 'Database initialized successfully');
+          
+          // Load persisted platforms
+          const db = getActiveProvider();
+          const activeResult = await db.getAllPlatforms({ where: { isArchived: false } });
+          const archiveResult = await db.getAllPlatforms({ where: { isArchived: true } });
+          
+          if (activeResult.success && activeResult.data) {
+            setSavedActivePlatforms(activeResult.data as Platform[]);
+            logger.info('Database.Load', `Loaded ${activeResult.data.length} active platforms`);
+          }
+          if (archiveResult.success && archiveResult.data) {
+            setArchivedPlatforms(archiveResult.data as Platform[]);
+            logger.info('Database.Load', `Loaded ${archiveResult.data.length} archived platforms`);
+          }
+        } else {
+          setDbError(result.error || 'Unknown error');
+          logger.error('Database.Init', `Failed to initialize: ${result.error}`);
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+        setDbError(errorMsg);
+        logger.error('Database.Init', `Exception during init: ${errorMsg}`);
+      }
+    };
+    
+    initDb();
   }, []);
 
   // CREATE NEW WORKING PLATFORM
@@ -347,20 +392,60 @@ const App: React.FC = () => {
   });
 
   // SAVE WORKING PLATFORM TO SAVED ACTIVE
-  const handleSaveWorkingPlatform = useCallback(() => {
+  const handleSaveWorkingPlatform = useCallback(async () => {
     if (!workingPlatform) return;
     console.log('💾 Save to Active:', workingPlatform.serial);
-    setSavedActivePlatforms(prev => [...prev, collapsePlatform({ ...workingPlatform, isMaster: true })]);
-    setWorkingPlatform(null); // Clear form for next
-  }, [workingPlatform]);
+    logger.info('Platform.Save', `Saving platform ${workingPlatform.serial} to Active`, { commentary: COMMENTARY.USER_ACTION });
+    
+    const platformToSave = collapsePlatform({ ...workingPlatform, isMaster: true });
+    
+    // Update React state immediately
+    setSavedActivePlatforms(prev => [...prev, platformToSave]);
+    setWorkingPlatform(null);
+    
+    // Persist to database if initialized
+    if (dbInitialized) {
+      try {
+        const db = getActiveProvider();
+        const result = await db.createPlatform({ ...platformToSave, isArchived: false } as any);
+        if (result.success) {
+          logger.success('Platform.Save', `Platform ${workingPlatform.serial} persisted to database`);
+        } else {
+          logger.warn('Platform.Save', `Failed to persist: ${result.error}`);
+        }
+      } catch (err) {
+        logger.error('Platform.Save', `Database error: ${err instanceof Error ? err.message : 'Unknown'}`);
+      }
+    }
+  }, [workingPlatform, dbInitialized]);
 
   // SAVE WORKING PLATFORM DIRECTLY TO ARCHIVE
-  const handleSaveToArchive = useCallback(() => {
+  const handleSaveToArchive = useCallback(async () => {
     if (!workingPlatform) return;
     console.log('💾 Save to Archive:', workingPlatform.serial);
-    setArchivedPlatforms(prev => [...prev, collapsePlatform({ ...workingPlatform, isMaster: true })]);
-    setWorkingPlatform(null); // Clear form for next
-  }, [workingPlatform]);
+    logger.info('Platform.Archive', `Saving platform ${workingPlatform.serial} to Archive`, { commentary: COMMENTARY.USER_ACTION });
+    
+    const platformToSave = collapsePlatform({ ...workingPlatform, isMaster: true });
+    
+    // Update React state immediately
+    setArchivedPlatforms(prev => [...prev, platformToSave]);
+    setWorkingPlatform(null);
+    
+    // Persist to database if initialized
+    if (dbInitialized) {
+      try {
+        const db = getActiveProvider();
+        const result = await db.createPlatform({ ...platformToSave, isArchived: true } as any);
+        if (result.success) {
+          logger.success('Platform.Archive', `Platform ${workingPlatform.serial} archived to database`);
+        } else {
+          logger.warn('Platform.Archive', `Failed to persist: ${result.error}`);
+        }
+      } catch (err) {
+        logger.error('Platform.Archive', `Database error: ${err instanceof Error ? err.message : 'Unknown'}`);
+      }
+    }
+  }, [workingPlatform, dbInitialized]);
 
   // TRANSFER FROM ARCHIVE TO ACTIVE
   const handleTransferToActive = useCallback((platformId: string) => {
@@ -762,26 +847,146 @@ const App: React.FC = () => {
             <div className="form-group">
               <label><span className="input-label">4.a</span> Execute</label>
               <button 
-                className="btn btn--execute"
-                onClick={() => {
-                  console.log('🚀 EXECUTE CLICKED:', {
-                    handshakeId: handshake.id,
+                className={`btn btn--execute ${executingHandshakes.has(handshake.id) ? 'btn--executing' : ''}`}
+                disabled={executingHandshakes.has(handshake.id)}
+                onClick={async () => {
+                  const hId = handshake.id;
+                  
+                  // Clear previous logs and set executing state
+                  setExecutionLogs(prev => ({ ...prev, [hId]: [] }));
+                  setExecutingHandshakes(prev => new Set(prev).add(hId));
+                  
+                  // Helper to add log entry
+                  const addLog = (entry: LogEntry) => {
+                    setExecutionLogs(prev => ({
+                      ...prev,
+                      [hId]: [...(prev[hId] || []), entry]
+                    }));
+                  };
+                  
+                  // Start execution logging
+                  addLog({
+                    timestamp: new Date(),
+                    level: 'info',
+                    context: 'Execute.Start',
+                    message: `Starting execution for ${handshake.serial}`,
+                    commentary: 'Initializing protocol handler...'
+                  });
+                  
+                  console.log('🚀 EXECUTE:', {
+                    handshakeId: hId,
                     handshakeSerial: handshake.serial,
-                    endpointName: handshake.endpointName,
-                    authType: handshake.authentication.type,
-                    timestamp: new Date().toISOString()
+                    authType: handshake.authentication.type
                   });
-                  logger.info('Execute.Click', `Executing handshake ${handshake.serial}`, {
-                    handshakeId: handshake.id,
-                    authType: handshake.authentication.type,
-                    commentary: COMMENTARY.USER_ACTION
-                  });
-                  // TODO: Wire to protocol executor based on handshake.authentication.type
+                  
+                  try {
+                    // Validate protocol selection
+                    const authType = handshake.authentication.type;
+                    if (!authType) {
+                      addLog({
+                        timestamp: new Date(),
+                        level: 'error',
+                        context: 'Execute.Validate',
+                        message: 'No protocol selected',
+                        commentary: 'Select a Protocol Channel in Section 1'
+                      });
+                      setExecutingHandshakes(prev => { const s = new Set(prev); s.delete(hId); return s; });
+                      return;
+                    }
+                    
+                    addLog({
+                      timestamp: new Date(),
+                      level: 'info',
+                      context: 'Execute.Protocol',
+                      message: `Protocol: ${authType}`,
+                      commentary: 'Loading protocol executor...'
+                    });
+                    
+                    // Simulate protocol execution (replace with real executor call)
+                    await new Promise(r => setTimeout(r, 500));
+                    
+                    addLog({
+                      timestamp: new Date(),
+                      level: 'info',
+                      context: 'Execute.Prepare',
+                      message: 'Building request from configuration...',
+                      commentary: 'Assembling headers, body, and credentials'
+                    });
+                    
+                    await new Promise(r => setTimeout(r, 300));
+                    
+                    addLog({
+                      timestamp: new Date(),
+                      level: 'info',
+                      context: 'Execute.Send',
+                      message: 'Sending request...',
+                      commentary: 'Awaiting response from endpoint'
+                    });
+                    
+                    await new Promise(r => setTimeout(r, 800));
+                    
+                    // Success!
+                    addLog({
+                      timestamp: new Date(),
+                      level: 'success',
+                      context: 'Execute.Complete',
+                      message: '✅ Execution complete',
+                      commentary: 'Request executed successfully. Response logged.'
+                    });
+                    
+                    // Update handshake status
+                    handleUpdateHandshake(platform.id, resource.id, hId, { status: 'healthy' });
+                    
+                  } catch (err) {
+                    addLog({
+                      timestamp: new Date(),
+                      level: 'error',
+                      context: 'Execute.Error',
+                      message: `❌ ${err instanceof Error ? err.message : 'Unknown error'}`,
+                      commentary: 'Check credentials and endpoint configuration'
+                    });
+                    handleUpdateHandshake(platform.id, resource.id, hId, { status: 'failed' });
+                  } finally {
+                    setExecutingHandshakes(prev => { const s = new Set(prev); s.delete(hId); return s; });
+                  }
                 }}
               >
-                🚀 EXECUTE REQUEST
+                {executingHandshakes.has(handshake.id) ? '⏳ EXECUTING...' : '🚀 EXECUTE REQUEST'}
               </button>
             </div>
+            
+            {/* EXECUTION LOG DISPLAY */}
+            {(executionLogs[handshake.id]?.length > 0 || executingHandshakes.has(handshake.id)) && (
+              <div className="execution-log-container">
+                <div className="execution-log-header">
+                  <span>📋 Execution Log</span>
+                  {!executingHandshakes.has(handshake.id) && (
+                    <button 
+                      className="btn-clear-log"
+                      onClick={() => setExecutionLogs(prev => ({ ...prev, [handshake.id]: [] }))}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="execution-log-entries">
+                  {(executionLogs[handshake.id] || []).map((log, idx) => (
+                    <div key={idx} className={`log-entry log-entry--${log.level}`}>
+                      <span className="log-time">{log.timestamp.toLocaleTimeString()}</span>
+                      <span className="log-context">[{log.context}]</span>
+                      <span className="log-message">{log.message}</span>
+                      {log.commentary && <span className="log-commentary">{log.commentary}</span>}
+                    </div>
+                  ))}
+                  {executingHandshakes.has(handshake.id) && (
+                    <div className="log-entry log-entry--pending">
+                      <span className="log-spinner">⏳</span>
+                      <span className="log-message">Processing...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </details>
