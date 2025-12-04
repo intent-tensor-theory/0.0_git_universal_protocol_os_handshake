@@ -9,12 +9,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './app.css';
 import { logger, COMMENTARY } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
 import { ReadmeHelpModal } from './1.7_folderSharedUserInterfaceComponents/1.7.8_folderReadmeHelpModal/1.7.8.a_fileReadmeHelpModalComponent';
-import { 
-  initializeDatabase, 
-  getActiveProvider, 
-  isDatabaseInitialized,
-  getActiveProviderType 
-} from './1.2_folderDatabasePersistence/1.2.c_fileActiveDatabaseProviderToggle';
 
 // ============================================
 // TYPES - GRANDFATHER EXACT
@@ -298,10 +292,6 @@ const App: React.FC = () => {
   // README Help Modal state
   const [helpModalSection, setHelpModalSection] = useState<1 | 2 | 3 | 4 | null>(null);
   const [helpModalAuthType, setHelpModalAuthType] = useState<string>('');
-  
-  // Database connection state
-  const [dbReady, setDbReady] = useState(false);
-  const [dbError, setDbError] = useState<string | null>(null);
 
   // Collect all serials for uniqueness check
   const getAllSerials = useCallback((): string[] => {
@@ -327,58 +317,6 @@ const App: React.FC = () => {
   useEffect(() => {
     console.log('🟢 APP MOUNT');
     logger.success('App.Init', 'Protocol OS mounted', { commentary: COMMENTARY.SYSTEM_INIT });
-    
-    // Initialize database on mount
-    const initDb = async () => {
-      try {
-        console.log('🗄️ Initializing database...');
-        const result = await initializeDatabase();
-        
-        if (result.success) {
-          setDbReady(true);
-          const providerType = getActiveProviderType();
-          console.log(`✅ Database ready: ${providerType}`);
-          logger.success('Database.Init', `Connected to ${providerType} provider`, {
-            commentary: COMMENTARY.SYSTEM_INIT
-          });
-          
-          // Load saved platforms from database
-          if (isDatabaseInitialized()) {
-            try {
-              const db = getActiveProvider();
-              const platformsResult = await db.getAllPlatforms();
-              
-              if (platformsResult.success && platformsResult.data) {
-                // Separate active and archived platforms
-                const active = platformsResult.data.filter((p: Platform) => !p.isMaster);
-                const archived = platformsResult.data.filter((p: Platform) => p.isMaster);
-                
-                // Add UI state (isExpanded) that isn't persisted
-                setSavedActivePlatforms(active.map((p: Platform) => ({ ...p, isExpanded: false })));
-                setArchivedPlatforms(archived.map((p: Platform) => ({ ...p, isExpanded: false })));
-                
-                console.log(`📦 Loaded ${active.length} active, ${archived.length} archived platforms`);
-                logger.info('Database.Load', `Loaded ${platformsResult.data.length} platforms`, {
-                  active: active.length,
-                  archived: archived.length
-                });
-              }
-            } catch (loadError) {
-              console.warn('⚠️ Could not load platforms:', loadError);
-            }
-          }
-        } else {
-          setDbError(result.error || 'Unknown database error');
-          console.warn('⚠️ Database init failed:', result.error);
-        }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-        setDbError(errorMsg);
-        console.error('❌ Database error:', err);
-      }
-    };
-    
-    initDb();
   }, []);
 
   // CREATE NEW WORKING PLATFORM
@@ -409,70 +347,20 @@ const App: React.FC = () => {
   });
 
   // SAVE WORKING PLATFORM TO SAVED ACTIVE
-  const handleSaveWorkingPlatform = useCallback(async () => {
+  const handleSaveWorkingPlatform = useCallback(() => {
     if (!workingPlatform) return;
     console.log('💾 Save to Active:', workingPlatform.serial);
-    
-    const platformToSave = collapsePlatform({ ...workingPlatform, isMaster: false });
-    
-    // Persist to database if ready
-    if (dbReady && isDatabaseInitialized()) {
-      try {
-        const db = getActiveProvider();
-        // Remove UI-only fields before saving
-        const { isExpanded, ...persistData } = platformToSave;
-        const result = await db.createPlatform(persistData as any);
-        
-        if (result.success) {
-          console.log('✅ Persisted to database:', workingPlatform.serial);
-          logger.success('Database.Save', `Saved active platform ${workingPlatform.serial}`, {
-            id: workingPlatform.id,
-            commentary: COMMENTARY.USER_ACTION
-          });
-        } else {
-          console.warn('⚠️ Database save failed:', result.error);
-        }
-      } catch (err) {
-        console.error('❌ Database save error:', err);
-      }
-    }
-    
-    setSavedActivePlatforms(prev => [...prev, platformToSave]);
+    setSavedActivePlatforms(prev => [...prev, collapsePlatform({ ...workingPlatform, isMaster: true })]);
     setWorkingPlatform(null); // Clear form for next
-  }, [workingPlatform, dbReady]);
+  }, [workingPlatform]);
 
   // SAVE WORKING PLATFORM DIRECTLY TO ARCHIVE
-  const handleSaveToArchive = useCallback(async () => {
+  const handleSaveToArchive = useCallback(() => {
     if (!workingPlatform) return;
     console.log('💾 Save to Archive:', workingPlatform.serial);
-    
-    const platformToSave = collapsePlatform({ ...workingPlatform, isMaster: true });
-    
-    // Persist to database if ready
-    if (dbReady && isDatabaseInitialized()) {
-      try {
-        const db = getActiveProvider();
-        // Remove UI-only fields before saving
-        const { isExpanded, ...persistData } = platformToSave;
-        const result = await db.createPlatform(persistData as any);
-        
-        if (result.success) {
-          console.log('✅ Persisted to database:', workingPlatform.serial);
-          logger.success('Database.Save', `Saved archived platform ${workingPlatform.serial}`, {
-            id: workingPlatform.id,
-            commentary: COMMENTARY.USER_ACTION
-          });
-        } else {
-          console.warn('⚠️ Database save failed:', result.error);
-        }
-      } catch (err) {
-        console.error('❌ Database save error:', err);
-      }
-    }
-    
-    setArchivedPlatforms(prev => [...prev, platformToSave]);
+    setArchivedPlatforms(prev => [...prev, collapsePlatform({ ...workingPlatform, isMaster: true })]);
     setWorkingPlatform(null); // Clear form for next
-  }, [workingPlatform, dbReady]);
+  }, [workingPlatform]);
 
   // TRANSFER FROM ARCHIVE TO ACTIVE
   const handleTransferToActive = useCallback((platformId: string) => {
@@ -964,9 +852,6 @@ const App: React.FC = () => {
 
       <footer className="app__footer">
         <span>Saved Active: {savedActivePlatforms.length} | Archived: {archivedPlatforms.length} | Working: {workingPlatform ? 1 : 0}</span>
-        <span className={`db-status ${dbReady ? 'db-status--connected' : 'db-status--disconnected'}`}>
-          {dbReady ? `🗄️ ${getActiveProviderType()}` : dbError ? `❌ ${dbError}` : '⏳ Connecting...'}
-        </span>
       </footer>
 
       {/* README Help Modal - fetches documentation from respective departments */}
