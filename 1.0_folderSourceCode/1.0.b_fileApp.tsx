@@ -10,6 +10,7 @@ import './app.css';
 import { logger, COMMENTARY, LogEntry } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
 import { ReadmeHelpModal } from './1.7_folderSharedUserInterfaceComponents/1.7.8_folderReadmeHelpModal/1.7.8.a_fileReadmeHelpModalComponent';
 import { initializeDatabase, getActiveProvider, isDatabaseInitialized } from './1.2_folderDatabasePersistence/1.2.c_fileActiveDatabaseProviderToggle';
+import { executeProtocol, type LogEntry as ExecutionLogEntry } from './1.3_folderProtocolRegistry/1.3.d_fileProtocolExecutionRouter';
 
 // ============================================
 // TYPES - GRANDFATHER EXACT
@@ -856,23 +857,6 @@ const App: React.FC = () => {
                   setExecutionLogs(prev => ({ ...prev, [hId]: [] }));
                   setExecutingHandshakes(prev => new Set(prev).add(hId));
                   
-                  // Helper to add log entry
-                  const addLog = (entry: LogEntry) => {
-                    setExecutionLogs(prev => ({
-                      ...prev,
-                      [hId]: [...(prev[hId] || []), entry]
-                    }));
-                  };
-                  
-                  // Start execution logging
-                  addLog({
-                    timestamp: new Date(),
-                    level: 'info',
-                    context: 'Execute.Start',
-                    message: `Starting execution for ${handshake.serial}`,
-                    commentary: 'Initializing protocol handler...'
-                  });
-                  
                   console.log('🚀 EXECUTE:', {
                     handshakeId: hId,
                     handshakeSerial: handshake.serial,
@@ -880,71 +864,46 @@ const App: React.FC = () => {
                   });
                   
                   try {
-                    // Validate protocol selection
-                    const authType = handshake.authentication.type;
-                    if (!authType) {
-                      addLog({
-                        timestamp: new Date(),
-                        level: 'error',
-                        context: 'Execute.Validate',
-                        message: 'No protocol selected',
-                        commentary: 'Select a Protocol Channel in Section 1'
-                      });
-                      setExecutingHandshakes(prev => { const s = new Set(prev); s.delete(hId); return s; });
-                      return;
-                    }
+                    // Build execution context from handshake
+                    const context = {
+                      handshakeId: hId,
+                      serial: handshake.serial,
+                      authType: handshake.authentication.type as string,
+                      credentials: handshake.authentication,
+                      curlRequests: handshake.curlRequests.map(c => ({
+                        id: c.id,
+                        command: c.command,
+                        name: c.name,
+                      })),
+                      // Log callback - updates UI in real-time
+                      onLog: (entry: ExecutionLogEntry) => {
+                        setExecutionLogs(prev => ({
+                          ...prev,
+                          [hId]: [...(prev[hId] || []), entry as LogEntry]
+                        }));
+                      }
+                    };
                     
-                    addLog({
-                      timestamp: new Date(),
-                      level: 'info',
-                      context: 'Execute.Protocol',
-                      message: `Protocol: ${authType}`,
-                      commentary: 'Loading protocol executor...'
+                    // Execute via protocol router
+                    const result = await executeProtocol(context);
+                    
+                    // Update handshake status based on result
+                    handleUpdateHandshake(platform.id, resource.id, hId, { 
+                      status: result.success ? 'healthy' : 'failed' 
                     });
-                    
-                    // Simulate protocol execution (replace with real executor call)
-                    await new Promise(r => setTimeout(r, 500));
-                    
-                    addLog({
-                      timestamp: new Date(),
-                      level: 'info',
-                      context: 'Execute.Prepare',
-                      message: 'Building request from configuration...',
-                      commentary: 'Assembling headers, body, and credentials'
-                    });
-                    
-                    await new Promise(r => setTimeout(r, 300));
-                    
-                    addLog({
-                      timestamp: new Date(),
-                      level: 'info',
-                      context: 'Execute.Send',
-                      message: 'Sending request...',
-                      commentary: 'Awaiting response from endpoint'
-                    });
-                    
-                    await new Promise(r => setTimeout(r, 800));
-                    
-                    // Success!
-                    addLog({
-                      timestamp: new Date(),
-                      level: 'success',
-                      context: 'Execute.Complete',
-                      message: '✅ Execution complete',
-                      commentary: 'Request executed successfully. Response logged.'
-                    });
-                    
-                    // Update handshake status
-                    handleUpdateHandshake(platform.id, resource.id, hId, { status: 'healthy' });
                     
                   } catch (err) {
-                    addLog({
-                      timestamp: new Date(),
-                      level: 'error',
-                      context: 'Execute.Error',
-                      message: `❌ ${err instanceof Error ? err.message : 'Unknown error'}`,
-                      commentary: 'Check credentials and endpoint configuration'
-                    });
+                    // Log unexpected errors
+                    setExecutionLogs(prev => ({
+                      ...prev,
+                      [hId]: [...(prev[hId] || []), {
+                        timestamp: new Date(),
+                        level: 'error' as const,
+                        context: 'Execute.Error',
+                        message: `❌ ${err instanceof Error ? err.message : 'Unknown error'}`,
+                        commentary: 'Unexpected error during execution'
+                      }]
+                    }));
                     handleUpdateHandshake(platform.id, resource.id, hId, { status: 'failed' });
                   } finally {
                     setExecutingHandshakes(prev => { const s = new Set(prev); s.delete(hId); return s; });
