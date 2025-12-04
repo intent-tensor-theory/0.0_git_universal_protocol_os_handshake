@@ -761,7 +761,26 @@ const App: React.FC = () => {
             </h4>
             <div className="form-group">
               <label><span className="input-label">4.a</span> Execute</label>
-              <button className="btn btn--execute">🚀 EXECUTE REQUEST</button>
+              <button 
+                className="btn btn--execute"
+                onClick={() => {
+                  console.log('🚀 EXECUTE CLICKED:', {
+                    handshakeId: handshake.id,
+                    handshakeSerial: handshake.serial,
+                    endpointName: handshake.endpointName,
+                    authType: handshake.authentication.type,
+                    timestamp: new Date().toISOString()
+                  });
+                  logger.info('Execute.Click', `Executing handshake ${handshake.serial}`, {
+                    handshakeId: handshake.id,
+                    authType: handshake.authentication.type,
+                    commentary: COMMENTARY.USER_ACTION
+                  });
+                  // TODO: Wire to protocol executor based on handshake.authentication.type
+                }}
+              >
+                🚀 EXECUTE REQUEST
+              </button>
             </div>
           </div>
         )}
