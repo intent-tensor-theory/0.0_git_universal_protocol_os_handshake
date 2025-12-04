@@ -562,14 +562,6 @@ details[open] {
   color: #34d399;
   transform: scale(1.2);
 }
-.btn-plus--amber {
-  color: #f59e0b;
-  font-size: 2rem;
-}
-.btn-plus--amber:hover {
-  color: #fbbf24;
-  transform: scale(1.2);
-}
 
 .btn--add-small {
   padding: 0.4rem 0.75rem;
@@ -579,19 +571,49 @@ details[open] {
   border: 1px solid var(--accent-green);
 }
 
-.btn--secondary {
-  background: rgba(59, 130, 246, 0.2);
-  color: var(--accent-blue);
-  border: 1px solid var(--accent-blue);
-}
-
-.btn--inject {
-  background: rgba(45, 212, 191, 0.2);
-  color: var(--accent-teal);
-  border: 1px solid var(--accent-teal);
+/* TRANSFER BUTTONS */
+.transfer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.btn-transfer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+}
+
+.btn-transfer--teal {
+  background: rgba(45, 212, 191, 0.15);
+  color: var(--accent-teal);
+  border-color: var(--accent-teal);
+}
+.btn-transfer--teal:hover {
+  background: rgba(45, 212, 191, 0.3);
+}
+
+.btn-transfer--amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+.btn-transfer--amber:hover {
+  background: rgba(245, 158, 11, 0.3);
+}
+
+.archive-count {
   font-size: 0.85rem;
-  padding: 0.5rem 1rem;
+  color: var(--text-muted);
 }
 
 .btn--add-small {
@@ -600,12 +622,6 @@ details[open] {
   background: rgba(16, 185, 129, 0.2);
   color: var(--accent-green);
   border: 1px solid var(--accent-green);
-}
-
-.btn--secondary {
-  background: rgba(59, 130, 246, 0.2);
-  color: var(--accent-blue);
-  border: 1px solid var(--accent-blue);
 }
 
 .btn--execute { 

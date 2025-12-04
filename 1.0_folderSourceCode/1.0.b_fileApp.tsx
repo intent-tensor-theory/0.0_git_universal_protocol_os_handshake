@@ -357,21 +357,25 @@ const App: React.FC = () => {
     setWorkingPlatform(null); // Clear form for next
   }, [workingPlatform]);
 
-  // ADD TO ARCHIVED
-  const handleAddArchivedPlatform = useCallback(() => {
-    console.log('🖱️ +ArchivedPlatform');
-    const serial = generateUniqueSerial('PLAT', getAllSerials());
-    const newPlatform: Platform = {
-      id: 'arch-plat-' + Date.now(),
-      serial,
-      name: 'Archived Master Platform',
-      url: '', description: '', doc_url: '', auth_notes: '',
-      contributors: [],
-      isMaster: true,
-      isExpanded: false,
-    };
-    setArchivedPlatforms(prev => [...prev, newPlatform]);
-  }, [getAllSerials]);
+  // TRANSFER FROM ARCHIVE TO ACTIVE
+  const handleTransferToActive = useCallback((platformId: string) => {
+    const platform = archivedPlatforms.find(p => p.id === platformId);
+    if (platform) {
+      console.log('↔️ Transfer to Active:', platform.serial);
+      setSavedActivePlatforms(prev => [...prev, { ...platform, id: 'plat-' + Date.now() }]);
+      setArchivedPlatforms(prev => prev.filter(p => p.id !== platformId));
+    }
+  }, [archivedPlatforms]);
+
+  // TRANSFER FROM ACTIVE TO ARCHIVE
+  const handleTransferToArchive = useCallback((platformId: string) => {
+    const platform = savedActivePlatforms.find(p => p.id === platformId);
+    if (platform) {
+      console.log('↔️ Transfer to Archive:', platform.serial);
+      setArchivedPlatforms(prev => [...prev, { ...platform, id: 'arch-' + Date.now() }]);
+      setSavedActivePlatforms(prev => prev.filter(p => p.id !== platformId));
+    }
+  }, [savedActivePlatforms]);
 
   // UPDATE PLATFORM (works on working, saved, or archived)
   const handleUpdatePlatform = useCallback((id: string, updates: Partial<Platform>) => {
@@ -393,25 +397,6 @@ const App: React.FC = () => {
       setArchivedPlatforms(prev => prev.filter(p => p.id !== id));
     }
   }, [workingPlatform]);
-
-  // INJECT FROM ARCHIVE TO ACTIVE
-  const handleInjectFromArchive = useCallback((platformId: string) => {
-    const platform = archivedPlatforms.find(p => p.id === platformId);
-    if (platform) {
-      console.log('💉 Inject from archive:', platform.serial);
-      setSavedActivePlatforms(prev => [...prev, { ...platform, id: 'plat-' + Date.now() }]);
-    }
-  }, [archivedPlatforms]);
-
-  // ARCHIVE FROM ACTIVE
-  const handleArchiveFromActive = useCallback((platformId: string) => {
-    const platform = savedActivePlatforms.find(p => p.id === platformId);
-    if (platform) {
-      console.log('📦 Archive from active:', platform.serial);
-      setArchivedPlatforms(prev => [...prev, { ...platform, isMaster: true }]);
-      setSavedActivePlatforms(prev => prev.filter(p => p.id !== platformId));
-    }
-  }, [savedActivePlatforms]);
 
   // RESOURCE HANDLERS
   const handleAddResource = useCallback((platformId: string) => {
@@ -759,16 +744,28 @@ const App: React.FC = () => {
       <div className={`header-subcontainer archive-panel ${archiveVisible ? 'is-visible' : ''}`}>
         <div className="archive-header">
           <h2>📦 Archived Master Platforms</h2>
-          <button className="btn-plus btn-plus--amber" onClick={handleAddArchivedPlatform} title="Mint New Archived Master">+</button>
+          <span className="archive-count">{archivedPlatforms.length} archived</span>
         </div>
         <div className="archived-platforms-container">
           {archivedPlatforms.length === 0 ? (
-            <p className="empty-text">No archived platforms.</p>
+            <p className="empty-text">No archived platforms. Save a platform with the amber disk to archive it.</p>
           ) : (
             archivedPlatforms.map(p => (
               <div key={p.id} className="saved-platform-row">
                 {renderPlatform(p)}
-                <button className="btn btn--inject" onClick={() => handleInjectFromArchive(p.id)}>💉 Inject to Active</button>
+                <div className="transfer-actions">
+                  <button className="btn-transfer btn-transfer--teal" onClick={() => handleTransferToActive(p.id)} title="Transfer to Active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+                    </svg>
+                    → Active
+                  </button>
+                  <button className="btn-icon btn-icon--danger" onClick={() => handleDeletePlatform(p.id)} title="Delete">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))
           )}
@@ -786,9 +783,26 @@ const App: React.FC = () => {
           
           <div className={`saved-active-container ${savedActiveVisible ? 'is-visible' : ''}`}>
             {savedActivePlatforms.length === 0 ? (
-              <p className="empty-text">No saved active platforms. Fill out the form below and save.</p>
+              <p className="empty-text">No saved active platforms. Fill out the form below and save with the green disk.</p>
             ) : (
-              savedActivePlatforms.map(p => renderPlatform(p))
+              savedActivePlatforms.map(p => (
+                <div key={p.id} className="saved-platform-row">
+                  {renderPlatform(p)}
+                  <div className="transfer-actions">
+                    <button className="btn-transfer btn-transfer--amber" onClick={() => handleTransferToArchive(p.id)} title="Transfer to Archive">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+                      </svg>
+                      → Archive
+                    </button>
+                    <button className="btn-icon btn-icon--danger" onClick={() => handleDeletePlatform(p.id)} title="Delete">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>
