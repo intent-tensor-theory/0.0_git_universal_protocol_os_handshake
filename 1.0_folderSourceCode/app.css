@@ -500,30 +500,39 @@ details[open] {
   box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--highlight-light);
 }
 
-/* DISK SAVE BUTTONS */
-.btn-disk {
+/* SVG ICON BUTTONS */
+.btn-icon {
   background: transparent;
   border: none;
-  font-size: 1.75rem;
   cursor: pointer;
-  padding: 0.25rem;
-  transition: transform 0.2s, filter 0.2s;
-  line-height: 1;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: transform 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.btn-disk:hover {
+.btn-icon:hover {
   transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.1);
 }
-.btn-disk--green {
-  filter: hue-rotate(90deg) saturate(2) brightness(1.2);
+.btn-icon--green {
+  color: #10b981;
 }
-.btn-disk--green:hover {
-  filter: hue-rotate(90deg) saturate(2) brightness(1.5);
+.btn-icon--green:hover {
+  background: rgba(16, 185, 129, 0.2);
 }
-.btn-disk--blue {
-  filter: hue-rotate(180deg) saturate(1.5) brightness(1.2);
+.btn-icon--blue {
+  color: #3b82f6;
 }
-.btn-disk--blue:hover {
-  filter: hue-rotate(180deg) saturate(1.5) brightness(1.5);
+.btn-icon--blue:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+.btn-icon--danger {
+  color: #ef4444;
+}
+.btn-icon--danger:hover {
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .btn--add { background: var(--accent-green); color: white; }

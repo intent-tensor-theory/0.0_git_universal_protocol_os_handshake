@@ -330,11 +330,22 @@ const App: React.FC = () => {
     setWorkingPlatform(newPlatform);
   }, [getAllSerials]);
 
+  // HELPER: Collapse all containers in a platform
+  const collapsePlatform = (platform: Platform): Platform => ({
+    ...platform,
+    isExpanded: false,
+    contributors: platform.contributors.map(r => ({
+      ...r,
+      isExpanded: false,
+      handshakes: r.handshakes.map(h => ({ ...h, isExpanded: false }))
+    }))
+  });
+
   // SAVE WORKING PLATFORM TO SAVED ACTIVE
   const handleSaveWorkingPlatform = useCallback(() => {
     if (!workingPlatform) return;
     console.log('💾 Save to Active:', workingPlatform.serial);
-    setSavedActivePlatforms(prev => [...prev, { ...workingPlatform, isMaster: true }]);
+    setSavedActivePlatforms(prev => [...prev, collapsePlatform({ ...workingPlatform, isMaster: true })]);
     setWorkingPlatform(null); // Clear form for next
   }, [workingPlatform]);
 
@@ -342,7 +353,7 @@ const App: React.FC = () => {
   const handleSaveToArchive = useCallback(() => {
     if (!workingPlatform) return;
     console.log('💾 Save to Archive:', workingPlatform.serial);
-    setArchivedPlatforms(prev => [...prev, { ...workingPlatform, isMaster: true }]);
+    setArchivedPlatforms(prev => [...prev, collapsePlatform({ ...workingPlatform, isMaster: true })]);
     setWorkingPlatform(null); // Clear form for next
   }, [workingPlatform]);
 
@@ -582,13 +593,25 @@ const App: React.FC = () => {
 
             <div className="platform-actions">
               <div className="platform-actions-left">
-                <button className="btn-remove" onClick={() => handleDeletePlatform(platform.id)} title="Delete">🗑️</button>
+                <button className="btn-icon btn-icon--danger" onClick={() => handleDeletePlatform(platform.id)} title="Delete">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
+                  </svg>
+                </button>
               </div>
               <div className="platform-actions-right">
                 {workingPlatform?.id === platform.id && (
                   <>
-                    <button className="btn-disk btn-disk--green" onClick={handleSaveWorkingPlatform} title="Save to Active">💾</button>
-                    <button className="btn-disk btn-disk--blue" onClick={() => { handleSaveToArchive(); }} title="Save to Archive">💾</button>
+                    <button className="btn-icon btn-icon--green" onClick={handleSaveWorkingPlatform} title="Save to Active">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H7V5h8v4z"/>
+                      </svg>
+                    </button>
+                    <button className="btn-icon btn-icon--blue" onClick={handleSaveToArchive} title="Save to Archive">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H7V5h8v4z"/>
+                      </svg>
+                    </button>
                   </>
                 )}
               </div>
