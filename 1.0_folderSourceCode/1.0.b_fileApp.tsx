@@ -10,20 +10,64 @@ import './app.css';
 import { logger, COMMENTARY } from './1.8_folderSharedUtilities/1.8.g_fileSystemLogger';
 
 // ============================================
-// TYPES
+// TYPES - GRANDFATHER EXACT
 // ============================================
+
+interface TestData {
+  [fileType: string]: {
+    stringInput: string;
+    fileInput: { name: string; data: string } | null;
+    output: string;
+  };
+}
+
+interface CurlRequest {
+  id: string;
+  serial: string;
+  name: string;
+  command: string;
+  supportedFileTypes: string[];
+  selectedTestFileType: string | null;
+  testData: TestData;
+}
+
+interface SchemaModel {
+  id: string;
+  serial: string;
+  name: string;
+  schemaJson: string;
+  supportedFileTypes: string[];
+  selectedTestFileType: string | null;
+  testData: TestData;
+  promotedFromCurlId?: string;
+}
+
+interface PromotedAction {
+  id: string;
+  serial: string;
+  name: string;
+  curlRequestId: string;
+  schemaModelId: string;
+  curlRequest: Omit<CurlRequest, 'id' | 'serial' | 'selectedTestFileType' | 'testData'>;
+  schemaModel: Omit<SchemaModel, 'id' | 'serial' | 'selectedTestFileType' | 'testData'>;
+}
 
 interface Authentication {
   type: string;
   [key: string]: unknown;
 }
 
+type HandshakeStatus = 'unconfigured' | 'awaiting_auth' | 'healthy' | 'failed';
+
 interface Handshake {
   id: string;
   serial: string;
   endpointName: string;
   authentication: Authentication;
-  status: 'unconfigured' | 'awaiting_auth' | 'healthy' | 'failed';
+  curlRequests: CurlRequest[];
+  schemaModels: SchemaModel[];
+  promotedActions: PromotedAction[];
+  status: HandshakeStatus;
   isExpanded?: boolean;
 }
 
@@ -53,104 +97,73 @@ interface Platform {
 }
 
 // ============================================
-// CONSTANTS - EXACT AUTH TYPES FROM GRANDFATHER
+// SERIAL GENERATOR - EXACT GRANDFATHER
 // ============================================
 
-const AUTH_TYPES = [
-  { value: '', label: 'Select an authentication type...' },
-  { value: 'curl-default', label: 'Universal cURL Execution' },
-  { value: 'oauth-pkce', label: 'OAuth 2.0 (PKCE)' },
-  { value: 'oauth-auth-code', label: 'OAuth 2.0 (Authorization Code)' },
-  { value: 'oauth-implicit', label: 'OAuth 2.0 (Implicit Grant)' },
-  { value: 'client-credentials', label: 'OAuth 2.0 (Client Credentials)' },
-  { value: 'rest-api-key', label: 'REST API Key / Bearer Token' },
-  { value: 'basic-auth', label: 'HTTP Basic Authentication' },
-  { value: 'graphql', label: 'GraphQL' },
-  { value: 'websocket', label: 'WebSocket' },
-  { value: 'soap-xml', label: 'SOAP/XML' },
-  { value: 'sse', label: 'Server-Sent Events' },
-  { value: 'grpc-web', label: 'gRPC-Web' },
-  { value: 'github-direct', label: 'GitHub Direct Connect' },
-  { value: 'keyless-scraper', label: 'Keyless Web Scraper' },
-];
-
-// ============================================
-// SERIAL GENERATOR
-// ============================================
-
-function generateSerial(prefix: string): string {
-  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${prefix}-${randomPart}`;
+function generateUniqueSerial(prefix: string, existingSerials: string[]): string {
+  let serial = '';
+  do {
+    const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+    serial = `${prefix}-${randomPart}`;
+  } while (existingSerials.includes(serial));
+  logger.debug('Serial.Generate', `Generated ${serial}`, { prefix });
+  return serial;
 }
 
 // ============================================
-// CREDENTIALS FORM RENDERER - EXACT GRANDFATHER STRUCTURE
+// AUTH TYPE OPTGROUPS - EXACT GRANDFATHER
 // ============================================
 
-interface CredentialsFormProps {
-  authType: string;
-  authentication: Authentication;
-  onUpdate: (field: string, value: string) => void;
-}
-
-const CredentialsForm: React.FC<CredentialsFormProps> = ({ authType, authentication, onUpdate }) => {
-  console.log('🎨 CredentialsForm render:', authType);
-
-  const renderInput = (
-    fieldId: string,
-    label: string,
-    placeholder: string,
-    options?: { required?: boolean; type?: string; badge?: string; defaultValue?: string; readonly?: boolean }
-  ) => (
-    <div className="input-group">
-      <label>
-        <span className="input-label">{fieldId}</span> {label}
-        {options?.required && <span className="required">*</span>}
-        {options?.badge && <span className="label-badge">{options.badge}</span>}
-      </label>
-      <input
-        type={options?.type || 'text'}
-        placeholder={placeholder}
-        defaultValue={options?.defaultValue}
-        readOnly={options?.readonly}
-        onChange={(e) => onUpdate(fieldId.replace('.', '_'), e.target.value)}
-      />
-    </div>
+const AuthTypeSelect: React.FC<{ value: string; onChange: (val: string) => void }> = ({ value, onChange }) => {
+  console.log('📝 AuthTypeSelect render:', value);
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">Select an authentication type...</option>
+      <option value="curl-default">🌐 Universal cURL Mode (Default)</option>
+      <optgroup label="OAuth 2.0 Flows (Callback Required)">
+        <option value="oauth-pkce">OAuth PKCE - Auth Code + Challenge</option>
+        <option value="oauth-auth-code">OAuth 2.0 - Authorization Code</option>
+        <option value="oauth-implicit">OAuth 2.0 - Implicit Grant</option>
+      </optgroup>
+      <optgroup label="Direct Token Auth (No Callback)">
+        <option value="client-credentials">OAuth Client Credentials</option>
+        <option value="rest-api-key">REST API - Bearer/API Key</option>
+        <option value="basic-auth">HTTP Basic Authentication</option>
+      </optgroup>
+      <optgroup label="Structured Protocols">
+        <option value="graphql">GraphQL - Query + Variables</option>
+        <option value="soap-xml">SOAP/XML - WS-Security</option>
+        <option value="grpc-web">gRPC-Web - Protocol Buffers</option>
+      </optgroup>
+      <optgroup label="Real-time Protocols">
+        <option value="websocket">WebSocket - Bidirectional</option>
+        <option value="sse">Server-Sent Events</option>
+      </optgroup>
+      <optgroup label="Custom Protocols">
+        <option value="github-direct">GitHub Direct Connect</option>
+        <option value="keyless-scraper">Keyless Access (Web Scraper)</option>
+      </optgroup>
+    </select>
   );
+};
 
-  const renderSelect = (
-    fieldId: string,
-    label: string,
-    selectOptions: { value: string; label: string }[],
-    options?: { required?: boolean }
-  ) => (
-    <div className="input-group">
-      <label>
-        <span className="input-label">{fieldId}</span> {label}
-        {options?.required && <span className="required">*</span>}
-      </label>
-      <select onChange={(e) => onUpdate(fieldId.replace('.', '_'), e.target.value)}>
-        {selectOptions.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
-  );
+// ============================================
+// CREDENTIALS FORM - EXACT GRANDFATHER FIELDS
+// ============================================
 
-  // CURL-DEFAULT
+const CredentialsForm: React.FC<{ authType: string }> = ({ authType }) => {
+  console.log('🔐 CredentialsForm render:', authType);
+
   if (authType === 'curl-default') {
     return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Mode:</strong> Universal cURL Execution<br />
-          <strong>Server-Side:</strong> No CORS restrictions<br />
-          <strong>Credentials:</strong> Optional - can be embedded in cURL
-        </div>
+      <div className="action-trigger">
+        <strong>Mode:</strong> Universal cURL Execution<br />
+        <strong>Server-Side:</strong> No CORS restrictions<br />
+        <strong>Credentials:</strong> Optional - can be embedded in cURL
       </div>
     );
   }
 
-  // OAUTH-PKCE
   if (authType === 'oauth-pkce') {
     return (
       <div className="credentials-form">
@@ -159,73 +172,35 @@ const CredentialsForm: React.FC<CredentialsFormProps> = ({ authType, authenticat
           <strong>Security:</strong> SHA256 code challenge<br />
           <strong>Callback Required:</strong> Yes - copy URL below
         </div>
-        {renderInput('2.a', 'Auth URL', 'https://accounts.google.com/o/oauth2/v2/auth', { required: true })}
-        {renderInput('2.b', 'Token URL', 'https://oauth2.googleapis.com/token', { required: true })}
-        {renderInput('2.c', 'API Endpoint URL', 'https://api.example.com/v1/endpoint', { required: true })}
-        {renderInput('2.d', 'Client ID', 'your-client-id', { required: true })}
-        {renderInput('2.e', 'Scope', 'openid profile email', { badge: 'Optional' })}
-        {renderInput('2.f', 'Redirect URI', window.location.origin + '/callback', { badge: 'Generated', readonly: true })}
+        <div className="input-group"><label><span className="input-label">2.a</span> Auth URL<span className="required">*</span></label><input type="text" placeholder="https://accounts.google.com/o/oauth2/v2/auth" /></div>
+        <div className="input-group"><label><span className="input-label">2.b</span> Token URL<span className="required">*</span></label><input type="text" placeholder="https://oauth2.googleapis.com/token" /></div>
+        <div className="input-group"><label><span className="input-label">2.c</span> API Endpoint URL<span className="required">*</span></label><input type="text" placeholder="https://api.example.com/v1/endpoint" /></div>
+        <div className="input-group"><label><span className="input-label">2.d</span> Client ID<span className="required">*</span></label><input type="text" placeholder="your-client-id" /></div>
+        <div className="input-group"><label><span className="input-label">2.e</span> Scope <span className="label-badge">Optional</span></label><input type="text" placeholder="openid profile email" /></div>
+        <div className="input-group"><label><span className="input-label">2.f</span> Redirect URI <span className="label-badge">Generated</span></label><input type="text" value={window.location.origin + '/callback'} readOnly /></div>
       </div>
     );
   }
 
-  // OAUTH-AUTH-CODE
   if (authType === 'oauth-auth-code') {
     return (
       <div className="credentials-form">
         <div className="action-trigger">
           <strong>Flow:</strong> Standard Authorization Code<br />
           <strong>Use Case:</strong> Web applications<br />
-          <strong>Callback Required:</strong> Yes - copy URL below
+          <strong>Callback Required:</strong> Yes
         </div>
-        {renderInput('2.a', 'Auth URL', 'https://accounts.google.com/o/oauth2/v2/auth', { required: true })}
-        {renderInput('2.b', 'Token URL', 'https://oauth2.googleapis.com/token', { required: true })}
-        {renderInput('2.c', 'API Endpoint URL', 'https://api.example.com/v1/endpoint', { required: true })}
-        {renderInput('2.d', 'Client ID', 'your-client-id', { required: true })}
-        {renderInput('2.e', 'Client Secret', 'your-client-secret', { required: true, type: 'password' })}
-        {renderInput('2.f', 'Scope', 'openid profile email', { badge: 'Optional' })}
-        {renderInput('2.g', 'Redirect URI', window.location.origin + '/callback', { badge: 'Generated', readonly: true })}
+        <div className="input-group"><label><span className="input-label">2.a</span> Auth URL<span className="required">*</span></label><input type="text" placeholder="https://accounts.google.com/o/oauth2/v2/auth" /></div>
+        <div className="input-group"><label><span className="input-label">2.b</span> Token URL<span className="required">*</span></label><input type="text" placeholder="https://oauth2.googleapis.com/token" /></div>
+        <div className="input-group"><label><span className="input-label">2.c</span> API Endpoint URL<span className="required">*</span></label><input type="text" placeholder="https://api.example.com/v1/endpoint" /></div>
+        <div className="input-group"><label><span className="input-label">2.d</span> Client ID<span className="required">*</span></label><input type="text" placeholder="your-client-id" /></div>
+        <div className="input-group"><label><span className="input-label">2.e</span> Client Secret<span className="required">*</span></label><input type="password" placeholder="your-client-secret" /></div>
+        <div className="input-group"><label><span className="input-label">2.f</span> Scope <span className="label-badge">Optional</span></label><input type="text" placeholder="openid profile email" /></div>
+        <div className="input-group"><label><span className="input-label">2.g</span> Redirect URI <span className="label-badge">Generated</span></label><input type="text" value={window.location.origin + '/callback'} readOnly /></div>
       </div>
     );
   }
 
-  // OAUTH-IMPLICIT
-  if (authType === 'oauth-implicit') {
-    return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Flow:</strong> Implicit Grant<br />
-          <strong>Use Case:</strong> Client-side apps<br />
-          <strong>Callback Required:</strong> Yes - copy URL below
-        </div>
-        {renderInput('2.a', 'Auth URL', 'https://accounts.google.com/o/oauth2/v2/auth', { required: true })}
-        {renderInput('2.b', 'API Endpoint URL', 'https://api.example.com/v1/endpoint', { required: true })}
-        {renderInput('2.c', 'Client ID', 'your-client-id', { required: true })}
-        {renderInput('2.d', 'Scope', 'openid profile email', { badge: 'Optional' })}
-        {renderInput('2.e', 'Redirect URI', window.location.origin + '/callback', { badge: 'Generated', readonly: true })}
-      </div>
-    );
-  }
-
-  // CLIENT-CREDENTIALS
-  if (authType === 'client-credentials') {
-    return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Flow:</strong> Client Credentials Grant<br />
-          <strong>Use Case:</strong> Server-to-server auth<br />
-          <strong>Callback Required:</strong> No
-        </div>
-        {renderInput('2.a', 'Token URL', 'https://oauth2.googleapis.com/token', { required: true })}
-        {renderInput('2.b', 'API Endpoint URL', 'https://api.example.com/v1/endpoint', { required: true })}
-        {renderInput('2.c', 'Client ID', 'your-client-id', { required: true })}
-        {renderInput('2.d', 'Client Secret', 'your-client-secret', { required: true, type: 'password' })}
-        {renderInput('2.e', 'Scope', 'read write', { badge: 'Optional' })}
-      </div>
-    );
-  }
-
-  // REST-API-KEY
   if (authType === 'rest-api-key') {
     return (
       <div className="credentials-form">
@@ -234,14 +209,13 @@ const CredentialsForm: React.FC<CredentialsFormProps> = ({ authType, authenticat
           <strong>Format:</strong> JSON<br />
           <strong>Callback Required:</strong> No
         </div>
-        {renderInput('2.a', 'API Endpoint URL', 'https://api.example.com/v1/endpoint', { required: true })}
-        {renderInput('2.b', 'API Key / Token', 'sk-...', { required: true, type: 'password' })}
-        {renderInput('2.c', 'Header Name', 'Authorization or X-API-Key', { badge: 'Default: Authorization', defaultValue: 'Authorization' })}
+        <div className="input-group"><label><span className="input-label">2.a</span> API Endpoint URL<span className="required">*</span></label><input type="text" placeholder="https://api.example.com/v1/endpoint" /></div>
+        <div className="input-group"><label><span className="input-label">2.b</span> API Key / Token<span className="required">*</span></label><input type="password" placeholder="sk-..." /></div>
+        <div className="input-group"><label><span className="input-label">2.c</span> Header Name <span className="label-badge">Default: Authorization</span></label><input type="text" placeholder="Authorization or X-API-Key" defaultValue="Authorization" /></div>
       </div>
     );
   }
 
-  // BASIC-AUTH
   if (authType === 'basic-auth') {
     return (
       <div className="credentials-form">
@@ -250,90 +224,13 @@ const CredentialsForm: React.FC<CredentialsFormProps> = ({ authType, authenticat
           <strong>Format:</strong> Any<br />
           <strong>Callback Required:</strong> No
         </div>
-        {renderInput('2.a', 'API Endpoint URL', 'https://api.example.com/endpoint', { required: true })}
-        {renderInput('2.b', 'Username', 'username', { required: true })}
-        {renderInput('2.c', 'Password', 'password', { required: true, type: 'password' })}
+        <div className="input-group"><label><span className="input-label">2.a</span> API Endpoint URL<span className="required">*</span></label><input type="text" placeholder="https://api.example.com/endpoint" /></div>
+        <div className="input-group"><label><span className="input-label">2.b</span> Username<span className="required">*</span></label><input type="text" placeholder="username" /></div>
+        <div className="input-group"><label><span className="input-label">2.c</span> Password<span className="required">*</span></label><input type="password" placeholder="password" /></div>
       </div>
     );
   }
 
-  // GRAPHQL
-  if (authType === 'graphql') {
-    return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Protocol:</strong> GraphQL over HTTP<br />
-          <strong>Format:</strong> Query + Variables<br />
-          <strong>Callback Required:</strong> No
-        </div>
-        {renderInput('2.a', 'GraphQL Endpoint', 'https://api.example.com/graphql', { required: true })}
-        {renderInput('2.b', 'Auth Token', 'Bearer token or API key', { badge: 'Optional', type: 'password' })}
-      </div>
-    );
-  }
-
-  // WEBSOCKET
-  if (authType === 'websocket') {
-    return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Protocol:</strong> WebSocket<br />
-          <strong>Connection:</strong> Persistent, bidirectional<br />
-          <strong>Callback Required:</strong> No
-        </div>
-        {renderInput('2.a', 'WebSocket URL', 'wss://example.com/socket', { required: true })}
-        {renderInput('2.b', 'Connection Timeout', '10000', { badge: 'ms', defaultValue: '10000' })}
-      </div>
-    );
-  }
-
-  // SOAP-XML
-  if (authType === 'soap-xml') {
-    return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Protocol:</strong> SOAP over HTTP<br />
-          <strong>Format:</strong> XML with SOAP Envelope<br />
-          <strong>Callback Required:</strong> No
-        </div>
-        {renderInput('2.a', 'SOAP Endpoint', 'https://service.example.com/soap', { required: true })}
-        {renderInput('2.b', 'SOAP Action', 'http://example.com/GetData', { badge: 'Optional' })}
-        {renderInput('2.c', 'Username', 'For WS-Security', { badge: 'Optional' })}
-        {renderInput('2.d', 'Password', 'For WS-Security', { badge: 'Optional', type: 'password' })}
-      </div>
-    );
-  }
-
-  // SSE
-  if (authType === 'sse') {
-    return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Protocol:</strong> Server-Sent Events<br />
-          <strong>Connection:</strong> Unidirectional server to client<br />
-          <strong>Callback Required:</strong> No
-        </div>
-        {renderInput('2.a', 'SSE URL', 'https://example.com/events', { required: true })}
-      </div>
-    );
-  }
-
-  // GRPC-WEB
-  if (authType === 'grpc-web') {
-    return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Protocol:</strong> gRPC-Web<br />
-          <strong>Note:</strong> Requires protobuf definitions in model input<br />
-          <strong>Callback Required:</strong> No
-        </div>
-        {renderInput('2.a', 'gRPC Endpoint', 'https://grpc.example.com/service', { required: true })}
-        {renderInput('2.b', 'Auth Token', 'Bearer token', { badge: 'Optional', type: 'password' })}
-      </div>
-    );
-  }
-
-  // GITHUB-DIRECT
   if (authType === 'github-direct') {
     return (
       <div className="credentials-form">
@@ -342,52 +239,65 @@ const CredentialsForm: React.FC<CredentialsFormProps> = ({ authType, authenticat
           <strong>Use Case:</strong> Fetch and run from repo<br />
           <strong>Callback Required:</strong> No
         </div>
-        {renderInput('2.a', 'GitHub Repository', 'owner/repo', { required: true })}
-        {renderInput('2.b', 'Branch', 'main', { required: true, defaultValue: 'main' })}
-        {renderInput('2.c', 'GitHub PAT', 'ghp_...', { badge: 'Optional', type: 'password' })}
-        {renderSelect('2.d', 'Runtime', [
-          { value: 'javascript', label: 'JavaScript' },
-          { value: 'node', label: 'Node.js' },
-          { value: 'python', label: 'Python' },
-        ], { required: true })}
-        {renderInput('2.e', 'Install Command', 'npm install', { badge: 'Optional' })}
-        {renderInput('2.f', 'Entrypoint Path', 'src/index.js', { required: true })}
-        {renderInput('2.g', 'Run Command', 'node index.js', { required: true })}
+        <div className="input-group"><label><span className="input-label">2.a</span> GitHub Repository<span className="required">*</span></label><input type="text" placeholder="owner/repo" /></div>
+        <div className="input-group"><label><span className="input-label">2.b</span> Branch<span className="required">*</span></label><input type="text" defaultValue="main" /></div>
+        <div className="input-group"><label><span className="input-label">2.c</span> GitHub PAT <span className="label-badge">Optional</span></label><input type="password" placeholder="ghp_..." /></div>
+        <div className="input-group"><label><span className="input-label">2.d</span> Runtime<span className="required">*</span></label>
+          <select><option value="javascript">JavaScript</option><option value="node">Node.js</option><option value="python">Python</option></select>
+        </div>
+        <div className="input-group"><label><span className="input-label">2.e</span> Install Command <span className="label-badge">Optional</span></label><input type="text" placeholder="npm install" /></div>
+        <div className="input-group"><label><span className="input-label">2.f</span> Entrypoint Path<span className="required">*</span></label><input type="text" placeholder="src/index.js" /></div>
+        <div className="input-group"><label><span className="input-label">2.g</span> Run Command<span className="required">*</span></label><input type="text" placeholder="node index.js" /></div>
       </div>
     );
   }
 
-  // KEYLESS-SCRAPER
   if (authType === 'keyless-scraper') {
     return (
-      <div className="credentials-form">
-        <div className="action-trigger">
-          <strong>Protocol:</strong> Keyless Access Web Scraper<br />
-          <strong>Note:</strong> No credentials required. Proceed to Section 3.<br />
-          <strong>Callback Required:</strong> No
-        </div>
+      <div className="action-trigger">
+        <strong>Protocol:</strong> Keyless Access Web Scraper<br />
+        <strong>Note:</strong> No credentials required. Proceed to Section 3.<br />
+        <strong>Callback Required:</strong> No
       </div>
     );
   }
 
-  // DEFAULT - No auth type selected
+  // Placeholder for other auth types
   return (
-    <div className="credentials-form">
-      <div className="action-trigger action-trigger--empty">
-        Select an authentication type above to configure credentials.
-      </div>
+    <div className="action-trigger action-trigger--empty">
+      Select an authentication type to configure credentials.
     </div>
   );
 };
 
 // ============================================
-// MAIN APP COMPONENT
+// MAIN APP
 // ============================================
 
 const App: React.FC = () => {
   console.log('🔴 APP RENDER');
 
   const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [archivedPlatforms, setArchivedPlatforms] = useState<Platform[]>([]);
+  const [archiveVisible, setArchiveVisible] = useState(false);
+
+  // Collect all serials for uniqueness check
+  const getAllSerials = useCallback((): string[] => {
+    const serials: string[] = [];
+    [...platforms, ...archivedPlatforms].forEach(p => {
+      serials.push(p.serial);
+      p.contributors.forEach(r => {
+        serials.push(r.serial);
+        r.handshakes.forEach(h => {
+          serials.push(h.serial);
+          h.curlRequests.forEach(c => serials.push(c.serial));
+          h.schemaModels.forEach(m => serials.push(m.serial));
+          h.promotedActions.forEach(pa => serials.push(pa.serial));
+        });
+      });
+    });
+    return serials;
+  }, [platforms, archivedPlatforms]);
 
   useEffect(() => {
     console.log('🟢 APP MOUNT');
@@ -397,9 +307,10 @@ const App: React.FC = () => {
   // PLATFORM HANDLERS
   const handleAddPlatform = useCallback(() => {
     console.log('🖱️ +Platform');
+    const serial = generateUniqueSerial('PLAT', getAllSerials());
     const newPlatform: Platform = {
       id: 'plat-' + Date.now(),
-      serial: generateSerial('PLAT'),
+      serial,
       name: 'Untitled Platform',
       url: '', description: '', doc_url: '', auth_notes: '',
       contributors: [],
@@ -407,258 +318,344 @@ const App: React.FC = () => {
       isExpanded: true,
     };
     setPlatforms(prev => [...prev, newPlatform]);
-  }, []);
+  }, [getAllSerials]);
+
+  const handleAddArchivedPlatform = useCallback(() => {
+    console.log('🖱️ +ArchivedPlatform');
+    const serial = generateUniqueSerial('PLAT', getAllSerials());
+    const newPlatform: Platform = {
+      id: 'arch-plat-' + Date.now(),
+      serial,
+      name: 'Archived Master Platform',
+      url: '', description: '', doc_url: '', auth_notes: '',
+      contributors: [],
+      isMaster: true,
+      isExpanded: false,
+    };
+    setArchivedPlatforms(prev => [...prev, newPlatform]);
+  }, [getAllSerials]);
 
   const handleUpdatePlatform = useCallback((id: string, updates: Partial<Platform>) => {
     setPlatforms(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    setArchivedPlatforms(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   }, []);
 
   const handleDeletePlatform = useCallback((id: string) => {
+    console.log('🗑️ Delete Platform:', id);
     setPlatforms(prev => prev.filter(p => p.id !== id));
+    setArchivedPlatforms(prev => prev.filter(p => p.id !== id));
   }, []);
 
   // RESOURCE HANDLERS
   const handleAddResource = useCallback((platformId: string) => {
-    console.log('🖱️ +Resource');
+    console.log('🖱️ +Resource for:', platformId);
+    const serial = generateUniqueSerial('RES', getAllSerials());
     const newResource: ApiResource = {
       id: 'res-' + Date.now(),
-      serial: generateSerial('RES'),
+      serial,
       title: 'Untitled API Resource',
       url: '', description: '', doc_url: '', notes: '',
       handshakes: [],
       isExpanded: true,
     };
-    setPlatforms(prev => prev.map(p => p.id === platformId 
-      ? { ...p, contributors: [...p.contributors, newResource] } 
-      : p
-    ));
+    const update = (p: Platform) => p.id === platformId 
+      ? { ...p, contributors: [...p.contributors, newResource] } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
+  }, [getAllSerials]);
+
+  const handleDeleteResource = useCallback((platformId: string, resourceId: string) => {
+    const update = (p: Platform) => p.id === platformId 
+      ? { ...p, contributors: p.contributors.filter(r => r.id !== resourceId) } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
   }, []);
 
   const handleUpdateResource = useCallback((platformId: string, resourceId: string, updates: Partial<ApiResource>) => {
-    setPlatforms(prev => prev.map(p => p.id === platformId 
-      ? { ...p, contributors: p.contributors.map(r => r.id === resourceId ? { ...r, ...updates } : r) }
-      : p
-    ));
-  }, []);
-
-  const handleDeleteResource = useCallback((platformId: string, resourceId: string) => {
-    setPlatforms(prev => prev.map(p => p.id === platformId 
-      ? { ...p, contributors: p.contributors.filter(r => r.id !== resourceId) }
-      : p
-    ));
+    const update = (p: Platform) => p.id === platformId 
+      ? { ...p, contributors: p.contributors.map(r => r.id === resourceId ? { ...r, ...updates } : r) } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
   }, []);
 
   // HANDSHAKE HANDLERS
   const handleAddHandshake = useCallback((platformId: string, resourceId: string) => {
-    console.log('🖱️ +Handshake');
+    console.log('🖱️ +Handshake for:', platformId, resourceId);
+    const serial = generateUniqueSerial('HS', getAllSerials());
     const newHandshake: Handshake = {
       id: 'hs-' + Date.now(),
-      serial: generateSerial('HS'),
+      serial,
       endpointName: 'New API Handshake',
       authentication: { type: '' },
+      curlRequests: [],
+      schemaModels: [],
+      promotedActions: [],
       status: 'unconfigured',
       isExpanded: true,
     };
-    setPlatforms(prev => prev.map(p => p.id === platformId 
+    const update = (p: Platform) => p.id === platformId 
       ? { ...p, contributors: p.contributors.map(r => r.id === resourceId 
-          ? { ...r, handshakes: [...r.handshakes, newHandshake] }
-          : r
-        )}
-      : p
-    ));
+          ? { ...r, handshakes: [...r.handshakes, newHandshake] } : r) } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
+  }, [getAllSerials]);
+
+  const handleUpdateHandshake = useCallback((pId: string, rId: string, hId: string, updates: Partial<Handshake>) => {
+    const update = (p: Platform) => p.id === pId 
+      ? { ...p, contributors: p.contributors.map(r => r.id === rId 
+          ? { ...r, handshakes: r.handshakes.map(h => h.id === hId ? { ...h, ...updates } : h) } : r) } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
   }, []);
 
-  const handleUpdateHandshake = useCallback((platformId: string, resourceId: string, handshakeId: string, updates: Partial<Handshake>) => {
-    setPlatforms(prev => prev.map(p => p.id === platformId 
-      ? { ...p, contributors: p.contributors.map(r => r.id === resourceId 
-          ? { ...r, handshakes: r.handshakes.map(h => h.id === handshakeId ? { ...h, ...updates } : h) }
-          : r
-        )}
-      : p
-    ));
-  }, []);
-
-  const handleDeleteHandshake = useCallback((platformId: string, resourceId: string, handshakeId: string) => {
-    setPlatforms(prev => prev.map(p => p.id === platformId 
-      ? { ...p, contributors: p.contributors.map(r => r.id === resourceId 
-          ? { ...r, handshakes: r.handshakes.filter(h => h.id !== handshakeId) }
-          : r
-        )}
-      : p
-    ));
+  const handleDeleteHandshake = useCallback((pId: string, rId: string, hId: string) => {
+    const update = (p: Platform) => p.id === pId 
+      ? { ...p, contributors: p.contributors.map(r => r.id === rId 
+          ? { ...r, handshakes: r.handshakes.filter(h => h.id !== hId) } : r) } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
   }, []);
 
   // TOGGLE HANDLERS
-  const togglePlatform = (id: string) => setPlatforms(prev => prev.map(p => p.id === id ? { ...p, isExpanded: !p.isExpanded } : p));
-  const toggleResource = (pId: string, rId: string) => setPlatforms(prev => prev.map(p => p.id === pId 
-    ? { ...p, contributors: p.contributors.map(r => r.id === rId ? { ...r, isExpanded: !r.isExpanded } : r) } : p));
-  const toggleHandshake = (pId: string, rId: string, hId: string) => setPlatforms(prev => prev.map(p => p.id === pId 
-    ? { ...p, contributors: p.contributors.map(r => r.id === rId 
-        ? { ...r, handshakes: r.handshakes.map(h => h.id === hId ? { ...h, isExpanded: !h.isExpanded } : h) } : r) } : p));
+  const toggle = (id: string) => {
+    const updateExp = (p: Platform) => p.id === id ? { ...p, isExpanded: !p.isExpanded } : p;
+    setPlatforms(prev => prev.map(updateExp));
+    setArchivedPlatforms(prev => prev.map(updateExp));
+  };
+
+  const toggleResource = (pId: string, rId: string) => {
+    const update = (p: Platform) => p.id === pId 
+      ? { ...p, contributors: p.contributors.map(r => r.id === rId ? { ...r, isExpanded: !r.isExpanded } : r) } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
+  };
+
+  const toggleHandshake = (pId: string, rId: string, hId: string) => {
+    const update = (p: Platform) => p.id === pId 
+      ? { ...p, contributors: p.contributors.map(r => r.id === rId 
+          ? { ...r, handshakes: r.handshakes.map(h => h.id === hId ? { ...h, isExpanded: !h.isExpanded } : h) } : r) } : p;
+    setPlatforms(prev => prev.map(update));
+    setArchivedPlatforms(prev => prev.map(update));
+  };
 
   // ============================================
-  // RENDER
+  // RENDER PLATFORM SECTION
   // ============================================
+  const renderPlatform = (platform: Platform, parentSerial: string = '') => {
+    const fullSerial = parentSerial ? `${parentSerial}.${platform.serial}` : platform.serial;
+    return (
+      <details key={platform.id} className="platform-section" open={platform.isExpanded} data-id={platform.id}>
+        <summary className="accordion-summary" onClick={(e) => { e.preventDefault(); toggle(platform.id); }}>
+          <span className={platform.isMaster ? 'badge-master' : 'badge-unconfirmed'}>{platform.isMaster ? '🛡️' : '❓'}</span>
+          <div className="accordion-title-container">
+            <span className="accordion-title">{platform.name || 'Untitled Platform'}</span>
+          </div>
+          <div className="accordion-right">
+            <span className="accordion-serial">{fullSerial}</span>
+            <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleDeletePlatform(platform.id); }}>🗑️</button>
+          </div>
+        </summary>
 
+        {platform.isExpanded && (
+          <div className="accordion-content">
+            <div className="form-group"><label><span className="input-label">1.a</span> Platform Name</label>
+              <input type="text" value={platform.name} onChange={(e) => handleUpdatePlatform(platform.id, { name: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.b</span> Platform URL</label>
+              <input type="text" value={platform.url} placeholder="https://api.example.com" onChange={(e) => handleUpdatePlatform(platform.id, { url: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.c</span> Description</label>
+              <textarea value={platform.description} rows={2} onChange={(e) => handleUpdatePlatform(platform.id, { description: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.d</span> Documentation URL</label>
+              <input type="text" value={platform.doc_url} onChange={(e) => handleUpdatePlatform(platform.id, { doc_url: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.e</span> Authentication Notes</label>
+              <textarea value={platform.auth_notes} rows={2} onChange={(e) => handleUpdatePlatform(platform.id, { auth_notes: e.target.value })} /></div>
+
+            <hr className="divider-full" />
+
+            <div className="section-header">
+              <h3>📦 API Resources</h3>
+              <button className="btn btn--add-small" onClick={() => handleAddResource(platform.id)}>+ Add Resource</button>
+            </div>
+
+            {platform.contributors.map(resource => renderResource(platform, resource, fullSerial))}
+
+            <div className="platform-actions">
+              <div className="platform-actions-left">
+                {!platform.isMaster && <button className="btn btn--confirm" onClick={() => handleUpdatePlatform(platform.id, { isMaster: true })}>✓ Confirm Master</button>}
+              </div>
+              <div className="platform-actions-right">
+                <span className="save-status">Ready.</span>
+                <button className="btn btn--text-danger">Cancel</button>
+                <button className="btn btn--text-success">Submit</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </details>
+    );
+  };
+
+  // ============================================
+  // RENDER RESOURCE SECTION
+  // ============================================
+  const renderResource = (platform: Platform, resource: ApiResource, parentSerial: string) => {
+    const fullSerial = `${parentSerial}.${resource.serial}`;
+    return (
+      <details key={resource.id} className="contributor-section" open={resource.isExpanded}>
+        <summary className="accordion-summary" onClick={(e) => { e.preventDefault(); toggleResource(platform.id, resource.id); }}>
+          <span>📦</span>
+          <div className="accordion-title-container">
+            <span className="accordion-title">{resource.title || 'Untitled Resource'}</span>
+          </div>
+          <div className="accordion-right">
+            <span className="accordion-serial">{fullSerial}</span>
+            <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleDeleteResource(platform.id, resource.id); }}>🗑️</button>
+          </div>
+        </summary>
+
+        {resource.isExpanded && (
+          <div className="accordion-content">
+            <div className="form-group"><label><span className="input-label">1.a</span> Resource Title</label>
+              <input type="text" value={resource.title} onChange={(e) => handleUpdateResource(platform.id, resource.id, { title: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.b</span> API URL</label>
+              <input type="text" value={resource.url} onChange={(e) => handleUpdateResource(platform.id, resource.id, { url: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.c</span> Description</label>
+              <textarea value={resource.description} rows={2} onChange={(e) => handleUpdateResource(platform.id, resource.id, { description: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.d</span> Doc URL</label>
+              <input type="text" value={resource.doc_url} onChange={(e) => handleUpdateResource(platform.id, resource.id, { doc_url: e.target.value })} /></div>
+            <div className="form-group"><label><span className="input-label">1.e</span> Notes</label>
+              <textarea value={resource.notes} rows={2} onChange={(e) => handleUpdateResource(platform.id, resource.id, { notes: e.target.value })} /></div>
+
+            <hr className="divider-sub" />
+
+            <div className="section-header">
+              <h4>🤝 Handshakes</h4>
+              <button className="btn btn--add-small" onClick={() => handleAddHandshake(platform.id, resource.id)}>+ Add Handshake</button>
+            </div>
+
+            {resource.handshakes.map(handshake => renderHandshake(platform, resource, handshake, fullSerial))}
+          </div>
+        )}
+      </details>
+    );
+  };
+
+  // ============================================
+  // RENDER HANDSHAKE SECTION - GRANDFATHER EXACT
+  // ============================================
+  const renderHandshake = (platform: Platform, resource: ApiResource, handshake: Handshake, parentSerial: string) => {
+    const fullSerial = `${parentSerial}.${handshake.serial}`;
+    return (
+      <details key={handshake.id} className="handshake-section" open={handshake.isExpanded}>
+        <summary className="accordion-summary" onClick={(e) => { e.preventDefault(); toggleHandshake(platform.id, resource.id, handshake.id); }}>
+          <span className={`ekg-icon ekg-${handshake.status}`}>🤝</span>
+          <div className="accordion-title-container">
+            <span className="accordion-title">{handshake.endpointName || 'Untitled Handshake'}</span>
+          </div>
+          <div className="accordion-right">
+            <span className="accordion-serial">{fullSerial}</span>
+            <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleDeleteHandshake(platform.id, resource.id, handshake.id); }}>🗑️</button>
+          </div>
+        </summary>
+
+        {handshake.isExpanded && (
+          <div className="accordion-content">
+            {/* SECTION 1: Protocol Channel */}
+            <h4 className="handshake-step-header"><span className="step-number">1</span> Protocol Channel</h4>
+            <div className="form-group">
+              <label><span className="input-label">1.a</span> Integration Name <span className="label-badge">Optional</span></label>
+              <input type="text" value={handshake.endpointName} placeholder="My API Integration"
+                onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { endpointName: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label><span className="input-label">1.b</span> Protocol Channel <span className="label-badge">Auto-Routes</span></label>
+              <AuthTypeSelect 
+                value={handshake.authentication.type as string}
+                onChange={(val) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { 
+                  authentication: { type: val },
+                  status: val ? 'awaiting_auth' : 'unconfigured'
+                })}
+              />
+            </div>
+
+            {/* SECTION 2: Channel Configuration */}
+            <h4 className="handshake-step-header"><span className="step-number">2</span> Channel Configuration</h4>
+            <CredentialsForm authType={handshake.authentication.type as string} />
+
+            {/* SECTION 3: Request Input */}
+            <h4 className="handshake-step-header"><span className="step-number">3</span> Request Input</h4>
+            <div className="form-group">
+              <label><span className="input-label">3.a</span> Input Model (cURL, Schema, JSON, XML) <span className="label-badge">Primary</span></label>
+              <textarea rows={6} placeholder="curl https://api.github.com/users/octocat" />
+            </div>
+            <div className="form-group">
+              <label><span className="input-label">3.b</span> Dynamic Input <span className="label-badge">Replaces {'{INPUT}'}</span></label>
+              <div className="dynamic-input-container">
+                <div className="form-group">
+                  <label><span className="input-label">3.b.i</span> Text Input</label>
+                  <input type="text" placeholder="Enter text to replace {INPUT} placeholder..." />
+                </div>
+                <div className="or-separator">OR</div>
+                <div className="form-group">
+                  <label><span className="input-label">3.b.ii</span> File Input</label>
+                  <input type="file" />
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 4: Execute */}
+            <h4 className="handshake-step-header"><span className="step-number">4</span> Execution & Output</h4>
+            <div className="form-group">
+              <label><span className="input-label">4.a</span> Execute</label>
+              <button className="btn btn--execute">🚀 EXECUTE REQUEST</button>
+            </div>
+          </div>
+        )}
+      </details>
+    );
+  };
+
+  // ============================================
+  // MAIN RENDER
+  // ============================================
   return (
     <div className="app">
       <header className="app__header">
-        <h1>🤝 Protocol OS</h1>
-        <p className="app__subtitle">Family Platform | Resource | Handshake | Protocol</p>
+        <div className="header-title-container" onClick={() => setArchiveVisible(!archiveVisible)}>
+          <h1>Family Platform Master API Key Manager</h1>
+          <p className="app__subtitle">Configure AI providers for content generation • Supports ALL file types</p>
+        </div>
         <button className="btn btn--add" onClick={handleAddPlatform}>+ Add New Platform</button>
       </header>
 
+      {/* ARCHIVED PLATFORMS DROPDOWN - GRANDFATHER EXACT */}
+      <div className={`header-subcontainer archive-panel ${archiveVisible ? 'is-visible' : ''}`}>
+        <div className="archive-header">
+          <h2>Archived Master Platforms</h2>
+          <button className="btn btn--secondary" onClick={handleAddArchivedPlatform}>📦 Mint New Archived Master</button>
+        </div>
+        <div className="archived-platforms-container">
+          {archivedPlatforms.length === 0 ? (
+            <p className="empty-text">No archived platforms.</p>
+          ) : (
+            archivedPlatforms.map(p => renderPlatform(p))
+          )}
+        </div>
+      </div>
+
       <main className="app__main">
+        <h2 className="main-content-header">Active Family Platform Master API Key Managers</h2>
         {platforms.length === 0 ? (
           <div className="empty-state">
             <p>No active platforms configured.</p>
-            <p>Click "Add New Platform" to begin.</p>
+            <p>Click "+ Add New Platform" to begin.</p>
           </div>
         ) : (
-          platforms.map(platform => (
-            <details key={platform.id} className="platform-section" open={platform.isExpanded}>
-              <summary className="accordion-summary" onClick={(e) => { e.preventDefault(); togglePlatform(platform.id); }}>
-                <span className={platform.isMaster ? 'master-badge' : 'unconfirmed-badge'}>
-                  {platform.isMaster ? '🛡️' : '❓'}
-                </span>
-                <div className="accordion-title-container">
-                  <span>{platform.name}</span>
-                  <span className="accordion-serial">{platform.serial}</span>
-                </div>
-                <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleDeletePlatform(platform.id); }}>✕</button>
-              </summary>
-              
-              {platform.isExpanded && (
-                <div className="accordion-content">
-                  <div className="form-group"><label><span className="input-label">1.a</span> Platform Name</label>
-                    <input type="text" value={platform.name} onChange={(e) => handleUpdatePlatform(platform.id, { name: e.target.value })} /></div>
-                  <div className="form-group"><label><span className="input-label">1.b</span> Platform URL</label>
-                    <input type="text" value={platform.url} placeholder="https://api.example.com" onChange={(e) => handleUpdatePlatform(platform.id, { url: e.target.value })} /></div>
-                  <div className="form-group"><label><span className="input-label">1.c</span> Description</label>
-                    <textarea value={platform.description} rows={2} onChange={(e) => handleUpdatePlatform(platform.id, { description: e.target.value })} /></div>
-                  <div className="form-group"><label><span className="input-label">1.d</span> Documentation URL</label>
-                    <input type="text" value={platform.doc_url} onChange={(e) => handleUpdatePlatform(platform.id, { doc_url: e.target.value })} /></div>
-                  <div className="form-group"><label><span className="input-label">1.e</span> Authentication Notes</label>
-                    <textarea value={platform.auth_notes} rows={2} onChange={(e) => handleUpdatePlatform(platform.id, { auth_notes: e.target.value })} /></div>
-
-                  <hr className="divider-full" />
-                  
-                  <div className="section-header">
-                    <h3>📦 API Resources</h3>
-                    <button className="btn btn--add-small" onClick={() => handleAddResource(platform.id)}>+ Add Resource</button>
-                  </div>
-
-                  {platform.contributors.map(resource => (
-                    <details key={resource.id} className="contributor-section" open={resource.isExpanded}>
-                      <summary className="accordion-summary" onClick={(e) => { e.preventDefault(); toggleResource(platform.id, resource.id); }}>
-                        <span>📦</span>
-                        <div className="accordion-title-container">
-                          <span>{resource.title}</span>
-                          <span className="accordion-serial">{resource.serial}</span>
-                        </div>
-                        <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleDeleteResource(platform.id, resource.id); }}>✕</button>
-                      </summary>
-
-                      {resource.isExpanded && (
-                        <div className="accordion-content">
-                          <div className="form-group"><label><span className="input-label">1.a</span> Resource Title</label>
-                            <input type="text" value={resource.title} onChange={(e) => handleUpdateResource(platform.id, resource.id, { title: e.target.value })} /></div>
-                          <div className="form-group"><label><span className="input-label">1.b</span> API URL</label>
-                            <input type="text" value={resource.url} onChange={(e) => handleUpdateResource(platform.id, resource.id, { url: e.target.value })} /></div>
-                          <div className="form-group"><label><span className="input-label">1.c</span> Description</label>
-                            <textarea value={resource.description} rows={2} onChange={(e) => handleUpdateResource(platform.id, resource.id, { description: e.target.value })} /></div>
-                          <div className="form-group"><label><span className="input-label">1.d</span> Doc URL</label>
-                            <input type="text" value={resource.doc_url} onChange={(e) => handleUpdateResource(platform.id, resource.id, { doc_url: e.target.value })} /></div>
-                          <div className="form-group"><label><span className="input-label">1.e</span> Notes</label>
-                            <textarea value={resource.notes} rows={2} onChange={(e) => handleUpdateResource(platform.id, resource.id, { notes: e.target.value })} /></div>
-
-                          <hr className="divider-sub" />
-
-                          <div className="section-header">
-                            <h4>🤝 Handshakes</h4>
-                            <button className="btn btn--add-small" onClick={() => handleAddHandshake(platform.id, resource.id)}>+ Add Handshake</button>
-                          </div>
-
-                          {resource.handshakes.map(handshake => (
-                            <details key={handshake.id} className="handshake-section" open={handshake.isExpanded}>
-                              <summary className="accordion-summary" onClick={(e) => { e.preventDefault(); toggleHandshake(platform.id, resource.id, handshake.id); }}>
-                                <span className={'ekg-icon ekg-' + handshake.status}>🤝</span>
-                                <div className="accordion-title-container">
-                                  <span>{handshake.endpointName}</span>
-                                  <span className="accordion-serial">{handshake.serial}</span>
-                                </div>
-                                <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleDeleteHandshake(platform.id, resource.id, handshake.id); }}>✕</button>
-                              </summary>
-
-                              {handshake.isExpanded && (
-                                <div className="accordion-content">
-                                  {/* STEP 1: ENDPOINT NAME */}
-                                  <h4 className="handshake-step-header"><span className="step-number">1</span> Endpoint Configuration</h4>
-                                  <div className="form-group">
-                                    <label><span className="input-label">1.a</span> Endpoint Name<span className="required">*</span></label>
-                                    <input 
-                                      type="text" 
-                                      value={handshake.endpointName}
-                                      placeholder="e.g., Get User Profile"
-                                      onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { endpointName: e.target.value })}
-                                    />
-                                  </div>
-
-                                  {/* STEP 2: CREDENTIALS */}
-                                  <h4 className="handshake-step-header"><span className="step-number">2</span> Credentials & Authentication</h4>
-                                  <div className="form-group">
-                                    <label><span className="input-label">2.0</span> Authentication Type<span className="required">*</span></label>
-                                    <select 
-                                      value={handshake.authentication.type}
-                                      onChange={(e) => handleUpdateHandshake(platform.id, resource.id, handshake.id, { 
-                                        authentication: { type: e.target.value },
-                                        status: e.target.value ? 'awaiting_auth' : 'unconfigured'
-                                      })}
-                                    >
-                                      {AUTH_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                                    </select>
-                                  </div>
-                                  
-                                  <CredentialsForm 
-                                    authType={handshake.authentication.type}
-                                    authentication={handshake.authentication}
-                                    onUpdate={(field, value) => handleUpdateHandshake(platform.id, resource.id, handshake.id, {
-                                      authentication: { ...handshake.authentication, [field]: value }
-                                    })}
-                                  />
-
-                                  {/* STEP 3: MODEL INPUT (placeholder) */}
-                                  <h4 className="handshake-step-header"><span className="step-number">3</span> Model Input / Request Body</h4>
-                                  <div className="form-group">
-                                    <label><span className="input-label">3.a</span> Model Input<span className="required">*</span></label>
-                                    <textarea rows={4} placeholder='{"query": "{INPUT}", "limit": 10}' />
-                                  </div>
-
-                                  <div className="platform-actions">
-                                    <button className="btn btn--execute">🚀 EXECUTE REQUEST</button>
-                                  </div>
-                                </div>
-                              )}
-                            </details>
-                          ))}
-                        </div>
-                      )}
-                    </details>
-                  ))}
-
-                  <div className="platform-actions">
-                    {!platform.isMaster && <button className="btn btn--confirm" onClick={() => handleUpdatePlatform(platform.id, { isMaster: true })}>✓ Confirm Master & Save</button>}
-                    <button className="btn btn--save">💾 Save</button>
-                  </div>
-                </div>
-              )}
-            </details>
-          ))
+          platforms.map(p => renderPlatform(p))
         )}
       </main>
 
       <footer className="app__footer">
-        <span>{platforms.length} platforms · {platforms.reduce((s,p)=>s+p.contributors.length,0)} resources · {platforms.reduce((s,p)=>s+p.contributors.reduce((x,r)=>x+r.handshakes.length,0),0)} handshakes</span>
+        <span>Active: {platforms.length} | Archived: {archivedPlatforms.length} | Resources: {platforms.reduce((s,p)=>s+p.contributors.length,0)} | Handshakes: {platforms.reduce((s,p)=>s+p.contributors.reduce((x,r)=>x+r.handshakes.length,0),0)}</span>
       </footer>
     </div>
   );
